@@ -1,3 +1,4 @@
+# Q706
 class MyHashMap:
 
     def __init__(self):
