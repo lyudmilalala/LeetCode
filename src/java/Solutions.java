@@ -12,6 +12,24 @@ public class Solutions {
 	 *                        Array 
 	 */	
 	
+	//codility test case
+	public int solution(int[] A) {
+		Arrays.parallelSort(A);
+		int ans = 1;
+        for(int i=0; i<A.length; i++) {
+        	if(A[i]<=0) {
+        		continue;
+        	} else if(i>0 && A[i]==A[i-1]) {
+        		continue;
+        	} else if(A[i]==ans) {
+        		ans++;
+        	} else if(A[i]>ans){
+        		break;
+        	}
+        }
+        return ans;
+    }
+	
 	//Q48
     public void rotate(int[][] matrix) {
   
@@ -69,28 +87,61 @@ public class Solutions {
     		// if single median, midCount point to median
     		int midCount = (nums1.length+nums2.length) / 2 + 1;
     		// a == nums1, b == nums2
-    		int aMinCount = 0;
-    		int aMaxCount = midCount;
-    		// if B has no enough length to cover all numbers <= mid, A has to cover at least midCount - nums2.length numbers
-    		if (nums2.length < midCount) {
-    			aMinCount = midCount - nums2.length;
+    		int nums1MinCount = Math.max(0, midCount-nums2.length);
+    		int nums1MaxCount = Math.min(midCount, nums1.length);
+    		int nums1Count = -1; //numbers of left half numbers included in nums1
+    		while(nums1MinCount<=nums1MaxCount) {
+    			nums1Count = (nums1MinCount + nums1MaxCount)/2;
+    			int nums2Count = midCount - nums1Count;
+    			if (nums2Count>0 && nums1Count< nums1.length && nums1[nums1Count-1+1] < nums2[nums2Count-1]) {
+    				nums1MinCount = nums1Count+1;
+    			} else if (nums1Count>0 && nums2Count< nums2.length && nums2[nums2Count-1+1] < nums1[nums1Count-1]) {
+    				nums1MaxCount = nums1Count-1;
+    			} else {
+    				// if no need to modify anymore, break
+    				break;
+    			}
     		}
-    		// if A has no enough length to cover all numbers <= mid, it can cover at most nums1.length numbers
-    		if (nums1.length < midCount) {
-    			aMaxCount = nums1.length;
+    		//calculate mid from the left half information
+    		if (nums1Count > 0 && midCount - nums1Count>0) {
+    			int first = nums1[nums1Count-1];
+    			int second = nums2[midCount-nums1Count-1];
+    			if (first > second) {
+    				if (nums1Count>1) {
+    					second = Math.max(second, nums1[nums1Count-2]);
+    				}
+    			} else {
+    				if (midCount-nums1Count>1) {
+    					first = Math.max(first, nums2[midCount-nums1Count-2]);
+    				}
+    			}
+    			return doublemid? (double)(first + second)/2 : Math.max(first, second);
+    		} else if (nums1Count == 0) {
+    			return doublemid? (double)(nums2[midCount-1] + nums2[midCount-2])/2 : nums2[midCount-1];
+    		} else {
+    			return doublemid? (double)(nums1[midCount-1] + nums1[midCount-2])/2 : nums1[midCount-1];
     		}
-    		
-    		// binary search for the correct count of A
-    		while (aMinCount <= aMaxCount) {
-    			int aCount = aMinCount + ((aMaxCount - aMinCount) / 2);
-    			int bCount = midCount - aCount;
-//    			if (aCount > 0 && )
-    			//TODO
-    		}
-    		return 0;
     	}
     }
     
+    //Q75
+    public void sortColors(int[] nums) {
+    	int firstOne = 0; int firstTwo = nums.length-1;
+        for(int i=0; i<=firstTwo; i++) {
+        	if(nums[i]==0) {
+        		nums[i] = nums[firstOne];
+        		nums[firstOne] = 0;
+        		//must go through every 0 to accumulate firstOne
+        		firstOne++;
+        	} else if(nums[i]==2) {
+        		nums[i] = nums[firstTwo];
+        		nums[firstTwo] = 2;
+        		firstTwo--;
+        		i--;
+        	}
+        }
+    }
+
     //Q283
     public void moveZeroes(int[] nums) {
         int pset = 0;
@@ -106,6 +157,67 @@ public class Solutions {
         }
     }
 
+	/*
+	 *                  String -- Two Pointer Sliding Window 
+	 */	
+    
+    //Q3
+    public int lengthOfLongestSubstring(String s) {
+    	HashMap<Character, Integer> map = new HashMap<>();
+        int slow = 0, fast = 0, max = 0;
+        while(slow < s.length() && fast<s.length()) {
+        	if (map.containsKey(s.charAt(fast))) {
+        		//compare the new duplication start and the current xtart
+                slow = Math.max(map.get(s.charAt(fast))+1, slow);
+        	}
+            map.put(s.charAt(fast), fast);
+            max = Math.max(max, fast-slow+1);
+            fast++;
+            
+        }
+        return max;
+    }
+
+    //Q76
+    public String minWindow(String s, String t) {
+        HashMap<Character, Integer> map = new HashMap<>();
+        for (Character c: t.toCharArray()) {
+        	if (!map.containsKey(c)) {
+        		map.put(c, 1);
+        	} else {
+        		map.put(c, map.get(c)+1);
+        	}
+        }
+        int counter = t.length(), slow = 0, fast = 0, min = Integer.MAX_VALUE;
+        String ans = "";
+        while(fast < s.length()) {
+        	if(map.containsKey(s.charAt(fast))) {
+        		if(map.get(s.charAt(fast))>0) {
+            		counter--;
+        		}
+        		map.put(s.charAt(fast), map.get(s.charAt(fast))-1);
+        	}
+        	//after satisfying requirement, increasing start to get minimum
+        	while(counter<=0) {
+        		if(fast-slow+1<min) {
+        			min = fast-slow+1;
+        			ans = s.substring(slow, fast+1);
+        		}
+        		if(map.containsKey(s.charAt(slow))) {
+        			map.put(s.charAt(slow), map.get(s.charAt(slow))+1);
+            		if(map.get(s.charAt(slow))>0) {
+                		counter++;
+            		}
+            	}
+        		slow++;
+        	}
+        	
+        	fast++;
+        }
+        
+        return ans;
+    }
+    
 	/*
 	 *                        LinkedList 
 	 */	
@@ -130,15 +242,15 @@ public class Solutions {
     		ListNode pre = head;
     		ListNode pointer2 = l2; // pointer for the current node in list2 need to be merged into list1
     		while (pointer2 != null) {
-    			if (pointer2.val < pre.next.val) {
+                if (pre.next == null) {
+    				pre.next = pointer2;
+    				break;
+                } else if (pointer2.val < pre.next.val) {
     				ListNode temp = pointer2;
     				pointer2 = pointer2.next;
     				temp.next = pre.next;
     				pre.next = temp;
     				pre = pre.next;
-    			} else if (pre.next.next == null) {
-    				pre.next.next = pointer2;
-    				break;
     			} else {
     				pre = pre.next;
     			}
@@ -148,6 +260,24 @@ public class Solutions {
        
     }
     
+    //Q19
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+    	ListNode dummy = new ListNode(-1);
+    	dummy.next = head;
+    	ListNode fast = dummy;
+    	while(n>0) {
+    		fast = fast.next;
+    		n--;
+    	}
+    	ListNode slow = dummy;
+    	while(fast.next!=null) {
+    		fast = fast.next;
+    		slow = slow.next;
+    	}
+    	slow.next = slow.next.next;
+    	return dummy.next;
+    }
+ 
     //Q23
     public ListNode mergeKLists(ListNode[] lists) {
         if (lists.length == 0) {
@@ -192,6 +322,55 @@ public class Solutions {
         return dummy.next;
     }
     
+    //Q234
+    public boolean isPalindrome(ListNode head) {
+        if (head == null || head.next == null) {
+        	return true;
+        } else {
+        	ListNode fast = head;
+        	ListNode slow = head;
+        	int length = 1;
+        	//can also be written as
+//        	while(fast.next!=null) {
+//        		fast = fast.next;
+//        		length++;
+//        		if (length % 2 == 1) {
+//        			slow = slow.next;
+//        		}
+//        			
+//        	}
+        	while(fast!=null && fast.next!=null) {
+                if(fast.next.next !=null){
+                    fast = fast.next.next;
+                    length+=2;
+                    slow = slow.next;
+                } else{
+                    fast = fast.next;
+                    length++;
+                }
+        	}
+            //reverse the second half
+        	ListNode newPre = null;
+        	ListNode newStart = slow.next;
+        	while (newStart!=null) {
+        		ListNode temp = newStart.next;
+        		newStart.next = newPre;
+        		newPre = newStart;
+        		newStart = temp;
+        	}
+        	//compare half of the list
+        	int count = length/2;
+        	while (count>0) {
+        		if (head.val != fast.val) {
+        			return false;
+        		}
+        		head = head.next;
+        		fast = fast.next;
+        		count--;
+        	}
+        	return true;
+        }           
+    }
     //Q347
     public List<Integer> topKFrequent(int[] nums, int k) {
     	
@@ -426,6 +605,22 @@ public class Solutions {
     		}
     	}
     	return count[amount];
+    }
+    
+    //Q279
+    public int numSquares(int n) {
+    	//states: least number of perfect squares needed to make up n
+    	int count[] = new int[n+1];
+    	Arrays.fill(count, Integer.MAX_VALUE-1);
+    	count[0] = 0;
+    	for(int i = 1; i<n+1; i++) {
+    		for(int j=0; j*j<=i; j++) {
+    			count[i] = Math.min(count[i], count[i-j*j]+1);
+    		}
+    	}
+    	return count[n];
+    	
+    	//math solution: four square theorem
     }
     
     //Q64
