@@ -1,4 +1,4 @@
-package java;
+package by_java;
 
 import java.util.*;
 
@@ -29,7 +29,29 @@ public class Solutions {
         }
         return ans;
     }
-	
+
+	//Q621
+	//Greedy -- always first calculate the tasks with most number
+	 public int leastInterval(char[] tasks, int n) {
+		 int maxOccur = 0; // the most amount of times a task occur
+		 int maxOccurCount = 0; // how many characters are with the max occurence
+		 int[] occurs = new int[26];
+		 for (char t: tasks) {
+			 occurs[t-'A']++;
+			 if (occurs[t-'A']>maxOccur) {
+				 maxOccur = occurs[t-'A'];
+				 maxOccurCount = 1;
+			 } else if (occurs[t-'A']==maxOccur) {
+				 maxOccurCount++;
+			 }
+		 }
+		 int emptyslots = (maxOccur-1)*(n+1-maxOccurCount);
+		 // idles are the least number of empty slots we must leave for cooling down, if we cannot fill all of them by extra tasks
+		 // extra tasks leave after filling empty slots can be inserted into anywhere as we satisfied the minimum cool down interval
+		 int idles = Math.max(0, emptyslots - (tasks.length - maxOccur*maxOccurCount));
+		 return tasks.length+idles;
+	 }
+	 
 	//Q48
     public void rotate(int[][] matrix) {
   
@@ -56,6 +78,7 @@ public class Solutions {
         
     }
 	
+    //Q56
     public int[][] merge(int[][] intervals) {
         Arrays.sort(intervals, (int[] a, int[] b) -> a[0] - b[0]);
         List<int []> temp = new LinkedList<>();
@@ -71,6 +94,150 @@ public class Solutions {
         	ans[i] = temp.get(i); 
         }
         return ans;
+    }
+
+    //Q163 Missing Range
+ 	public List<String> findMissingRanges(int[] nums, int lower, int upper) {
+ 		 List<String> ans = new LinkedList<>();
+ 		 int cur = lower;
+ 		 for (int i = 0; i<nums.length; i++) {
+ 			 if (cur < nums[i]-1) {
+ 				 ans.add(String.valueOf(cur)+"->"+String.valueOf(Math.min(nums[i]-1, upper)));
+ 				 cur = nums[i]+1;		 
+ 			 } else if (cur==nums[i]-1) {
+ 				 ans.add(String.valueOf(cur));
+ 				 cur = nums[i]+1;
+ 			 } else if (cur==nums[i]) {
+ 				 cur++;
+ 			 }
+ 			 if (nums[i]>=upper) {
+ 				 break;
+ 			 }
+ 		 }
+ 		 if (nums[nums.length-1]<upper && cur<upper-1) {
+ 			 ans.add(String.valueOf(cur)+"->"+String.valueOf(upper));
+ 		 } else if (nums[nums.length-1]<upper && cur == upper-1) {
+ 			 ans.add(String.valueOf(upper));
+ 		 }
+ 		 return ans;
+ 	}
+ 	
+ 	//Q238
+ 	public int[] productExceptSelf(int[] nums) {
+         int mul = 1; // multiplication without all zeros
+         int countZero = 0;
+         for (int i : nums) {
+        	 if (i == 0) {
+        		 countZero++;
+        	 } else {
+        		 mul *= i;
+        	 }
+        	 
+         }
+         for (int j = 0; j<nums.length; j++) {
+        	 if (countZero>1) {
+        		 nums[j] = 0;
+        	 } else if (countZero == 0) {
+        		 nums[j] = mul / nums[j];
+        	 } else {
+        		 // countZero == 1
+        		 if (nums[j] == 0) {
+        			 nums[j] = mul;
+        		 } else {
+        			 nums[j] = 0;
+        		 }
+        	 }
+        	 
+         }
+         return nums;
+    }
+
+ 	//Q560
+    public int subarraySum(int[] nums, int k) {
+    	int count = 0, sum = 0;
+    	// two pointer start and end
+    	// time complexity O(n^2), space complexity O(n)
+    	for (int start =0; start<nums.length; start++) {
+    		sum = 0;
+    		for (int end = start; end <nums.length; end++) {
+    			sum += nums[end];
+    			if (sum == k) {
+    				count++;
+    			}
+    		}
+    	}
+        // use HashMap for hold all existed sum
+    	// time complexity O(n), space complexity O(n)
+//        HashMap < Integer, Integer > map = new HashMap < > ();
+//        map.put(0, 1);
+//        for (int i = 0; i < nums.length; i++) {
+//            sum += nums[i];
+//            if (map.containsKey(sum - k))
+//                count += map.get(sum - k);
+//            map.put(sum, map.getOrDefault(sum, 0) + 1);
+//        }
+        return count;
+    }
+    
+    //Q581
+    public int findUnsortedSubarray(int[] nums) {
+    	int start = 0;
+    	while(start<nums.length-1 && nums[start]<=nums[start+1]) {
+    		start++;
+    	}
+    	int end = nums.length-1;
+    	while(end>0 && nums[end]>=nums[end-1]) {
+    		end--;
+    	}
+    	if (start==nums.length-1) {
+    		// originally correct in order
+    		return 0;
+    	} else {
+    		// find the minimum after the first fall from peak
+    		int min = nums[start+1];
+    		for (int i = start+2; i<nums.length; i++) {
+    			if (nums[i]<min) {
+    				min = nums[i];
+    			}
+    		}
+    		// switch it with the first number larger than it
+    		while(start>0 && nums[start-1]>min) {
+    			start--;
+    		}
+    		// find the maximum after the first rise from valley
+    		int max = nums[end-1];
+    		for (int i=end-2; i>=0; i--) {
+    			if (nums[i]>max) {
+    				max = nums[i];
+    			}
+    		}
+    		// switch it with the last number smaller than it
+    		while (end < nums.length-1 && nums[end+1]<max) {
+    			end++;
+    		}
+    		return end-start+1;
+    	}
+    }
+    
+    //Q66
+    public int[] plusOne(int[] digits) {
+    	int i = digits.length-1;
+    	digits[i] = digits[i]+1;
+        while(i>0 && digits[i]>9) {
+        	digits[i] = 0;
+        	digits[i-1] = digits[i-1]+1;
+        	i--;
+        }
+        if (i==0 && digits[i]>9) {
+        	int[] ans = new int[digits.length+1];
+        	ans[0] = 1;
+            ans[1] = 0;
+        	for(int j=1; j<digits.length; j++) {
+        		ans[j+1] = digits[j];
+        	}
+        	digits = ans;
+        }
+        return digits;
     }
 
     //Q4
@@ -157,6 +324,138 @@ public class Solutions {
         }
     }
 
+    //Q904
+    public int totalFruit(int[] tree) {
+    	int max = Integer.MIN_VALUE, start = 0, count = 0, slow =0, fast = 0;
+    	HashMap<Integer, Integer> hm = new HashMap<>(); // hashMap holds <fruit id, count of fruits>
+    	while(fast<tree.length) {
+    		if (hm.containsKey(tree[fast])) {
+    			int n = hm.get(tree[fast]);
+    			hm.put(tree[fast], n+1);
+    		} else {
+    			
+    			hm.put(tree[fast], 1);
+    			count++;
+    		}
+    		while(count>2) {
+    			int temp = fast-slow; //fast-1-slow+1
+    			if (temp>max) {
+    				max = temp;
+    				start = slow;
+    			}
+//    			System.out.println("slow = " + slow + "   fast = "+ fast+"  max ="+max);
+    			
+    			if (hm.get(tree[slow])>1) {
+    				int m = hm.get(tree[slow]);
+        			hm.put(tree[slow], m-1);
+    			} else {
+    				hm.remove(tree[slow]);
+    				count--;
+    			}
+    			slow++;
+    		}
+    		fast++;
+    	}
+    	int temp = fast-slow; //fast-1-slow+1
+		if (temp>max) {
+			max = temp;
+			start = slow;
+		}
+		return max;
+        
+    }
+    
+    //Q406
+    public int[][] reconstructQueue(int[][] people) {
+        if (people.length == 0){
+            return people;
+        }
+        // sort the list first by height, and then by numbesr of people in front
+        Arrays.parallelSort(people, ((int[] a, int[] b) -> {
+        	if (a[0]==b[0]) {
+        		return a[1]-b[1];
+        	} else {
+        		return b[0]-a[0];
+        	}
+        }));
+        // push back to the queue by order of people in front
+        List<int[]> mylist = new ArrayList<>();
+        int max = people[0][0];
+        for (int i=0; i<people.length; i++) {
+        	if(people[i][0]==max) {
+        		mylist.add(people[i]);
+        	} else {
+        		mylist.add(people[i][1], people[i]);
+        	}
+        }
+        for (int i =0; i<people.length; i++) {
+        	people[i] = mylist.get(i);
+        }
+    	return people;
+    }
+
+    //Q475 Two-pointer
+    //keep the pointer of the heater array to the left heater of the current house
+    public int findRadius(int[] houses, int[] heaters) {
+    	Arrays.parallelSort(houses);
+    	Arrays.parallelSort(heaters);
+        int ans = 0;
+        for(int i=0; i<houses.length; i++) {
+        	int j = 0;
+        	while( j<heaters.length-1 && Math.abs(heaters[j+1]-houses[i])<=Math.abs(heaters[j]-houses[i])) {
+        		// if next heater is closer to the current house, move to that heater
+        		j++;
+        	}
+        	ans = Math.max(ans, Math.abs(heaters[j]-houses[i]));
+        }
+        return ans;
+    }
+
+    //Q1007
+    public int minDominoRotations(int[] A, int[] B) {
+    	if(A.length!=B.length || A.length==0) {
+    		return -1;
+    	}
+    	int min = -1;
+    	// because we want to make all values the same on a surface, so the value can only be A[0] or B[0]
+    	int countAA0 = 0; // count for filping all in A to A[0]
+    	int countAB0 = 0; // count for filping all in A to B[0]
+    	int countBA0 = 0; // count for filping all in B to A[0]
+    	int countBB0 = 0; // count for filping all in B to B[0]
+    	//try to filp all in A or B to A[0]
+    	for (int i=0; i<A.length; i++) {
+    		if (A[i]!=A[0] && B[i]!=A[0]) {
+    			// if neither A[0] nor B[0], cannot get all values the same
+    			break;
+    		} else if(A[i]!=A[0]) {
+    			countAA0++; //need flip A[i]
+    		} else if (B[i]!= A[0]) {
+    			countBA0++; //need flip B[i]
+    		}
+    		if(i==A.length-1) {
+    			// insist until the last, update value
+    			min = Math.min(countAA0, countBA0);
+    		}
+    	}
+    	//try to filp all in A or B to B[0]
+    	for (int i=0; i<A.length; i++) {
+    		if (A[i]!=B[0] && B[i]!=B[0]) {
+    			// if neither A[0] nor B[0], cannot get all values the same
+    			break;
+    		} else if(A[i]!=B[0]) {
+    			countAB0++; //need flip A[i]
+    		} else if (B[i]!=B[0]) {
+    			countBB0++; //need flip B[i]
+    		}
+    		if(i==A.length-1) {
+    			// insist until the last, update value
+    			min = min ==-1? Math.min(countAB0, countBB0) : Math.min(min, Math.min(countAB0, countBB0));
+    		}
+    	}
+    	
+    	return min;
+    }
+    
 	/*
 	 *                  String -- Two Pointer Sliding Window 
 	 */	
@@ -218,6 +517,26 @@ public class Solutions {
         return ans;
     }
     
+    //Q482
+	public String FormatLicenseKey(String S, int K) {
+		StringBuilder sb = new StringBuilder();
+		int count = 0;
+		for(int i = S.length()-1; i>=0; i--) {
+			if (S.charAt(i) != '-') {
+				sb.append(Character.toUpperCase(S.charAt(i)));
+				count++;
+				if (count% K == 0) {
+					sb.append('-');
+				}
+			}
+		}
+		
+		if (sb.length() > 0 && sb.charAt(sb.length()-1)== '-') {
+			sb.deleteCharAt(sb.length()-1);
+		}
+		return sb.reverse().toString();
+	}
+	
 	/*
 	 *                        LinkedList 
 	 */	
@@ -305,6 +624,53 @@ public class Solutions {
     	return mylists.size()==1? mylists : merge(mylists);
     }
 
+    //Q141
+    public boolean hasCycle(ListNode head) {
+    	ListNode fast = head;
+        ListNode slow = head;
+        while(fast != null && fast.next != null) {        
+        	fast = fast.next.next;
+        	slow = slow.next;
+        	if (slow == fast) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /*
+     * Q142
+     * slow pointer travels one step at once, fast pointer travels two steps at once
+     * s_to_e: start to entry of cycle
+     * e_to_m: entry of cycle to first meeting point of fast and slow
+     * lenc: length of cycle
+     * n: number of cycles traveled by the fast pointer more than the slow pointer before they meet
+     * When they meet,
+     * 	  slow pointer travels * 2 = fast pointer travels
+     *     ( s_to_e + e_to_m ) * 2 =  s_to_e + e_to_m + lenc * n
+     *             s_to_e + e_to_m = lenc * n
+     *             s_to_e = lenc * (n-1) + ( lenc - e_to_m )
+     * A pointer travels from start will meet with another point travels from the meeting point at the entry point
+    */
+    public ListNode detectCycle(ListNode head) {
+    	ListNode slow = head;
+        ListNode fast = head;
+        while (fast!=null && fast.next!=null) {
+        	fast = fast.next.next;
+        	slow = slow.next;
+        	if (slow == fast) {
+        		// create a new node move from start to entry
+                ListNode se = head;
+                while(se != slow) {
+                	slow = slow.next;
+                	se = se.next;
+                }
+                return se;
+            }
+        }
+        return null;
+    }
+    
 	//Q24
     public ListNode swapPairs(ListNode head) {
         ListNode dummy = new ListNode(-1);
@@ -371,6 +737,141 @@ public class Solutions {
         	return true;
         }           
     }
+    
+    private ListNode createSampleLinkedList() {
+    	ListNode head = new ListNode(-1);
+    	head.next = new ListNode(5);
+    	head.next.next = new ListNode(3);
+    	head.next.next.next = new ListNode(4);
+    	head.next.next.next.next = new ListNode(0);
+    	return head;
+    }
+    
+    private void print(ListNode head) {
+    	ListNode cur = head;
+    	StringBuilder sb = new StringBuilder();
+    	while(cur!=null) {
+    		sb.append(cur.val);
+    		sb.append(" -> ");
+    		cur = cur.next;
+    	}
+    	sb.delete(sb.length()-4, sb.length()-1);
+    	System.out.println(sb.toString());
+    }
+    
+    //Q148 legitimate solution time complexity O(nlogn), space complexity O(1)
+    public ListNode sortList(ListNode head) {
+    	if (head == null) {
+    		return null;
+    	}
+    	//create dummy head
+    	ListNode dummy = new ListNode(-1000);
+    	dummy.next = head;
+    	int size = 0;
+    	ListNode cur = head;
+    	//get the size of list
+    	while(cur!=null) {
+    		size++;
+    		cur = cur.next;
+    	}
+    	System.out.println("size = " + size);
+//    	print(dummy);
+    	//start with merge two item into a sorted sublist, then increase the size of sorted sublist
+    	for(int step_length=2; step_length<size; step_length*=2) {
+    		print(dummy);
+    		ListNode pre = dummy;
+    		cur = dummy.next;
+    		ListNode next_start = null;
+    		while(cur!=null) {
+    			ListNode start = cur;
+    			ListNode half = cur;
+    			int k = 0;
+    			// refresh start point of the second sublist
+    			k = 0;
+    			while(k<step_length/2 && half!=null) {
+    				half = half.next;
+    				k++;
+    			}
+    			// get the new end point (next current)
+    			if (half!=null) {
+    				next_start = half;
+    				k = 0;
+        			while(k<step_length/2 && next_start!=null) {
+        				next_start = next_start.next;
+        				k++;
+        			}
+    			}
+    			// merge two sublist
+    			int pointer1 = 0;
+    			int pointer2 = 0;
+    			while ((start!=null || half!=null) && (pointer1<step_length/2 || pointer2<step_length/2)) {
+    				if (start!=null && half!=null && pointer1<step_length/2 && pointer2<step_length/2) {
+    					if (start.val<=half.val) {
+    						ListNode temp = start.next;
+    						pre.next = start;
+    						start = temp;
+    						pointer1++;
+    					}else {
+    						ListNode temp = half.next;
+    						pre.next = half;
+    						half = temp;
+    						pointer2++;
+    					}
+    				}else if(half==null || pointer2>=step_length/2) {
+    					pre.next = start;
+						start = start.next;
+						pointer1++;
+    				} else if(start==null || pointer1>=step_length/2) {
+    					pre.next = half;
+						half = half.next;
+						pointer2++;
+    				}
+    				pre = pre.next;
+    			}
+    			pre.next = next_start;
+    			cur = next_start;
+    		}
+    		
+    	}
+    	
+    	return dummy.next;
+    }
+    
+    
+    
+    //Q148 QuickSort time complexity O(nlogn), but close to O(n^2) for the sample data
+//    public ListNode sortList(ListNode head) {
+//    	if (head == null) {
+//    		return null;
+//    	}
+//    	ListNode dummy = new ListNode(-1000);
+//    	dummy.next = head;
+//    	partition(head, dummy, null);
+//    	return dummy.next;
+//    }
+
+//    private void partition(ListNode pivot, ListNode pre, ListNode next) {
+//    	ListNode cur = pivot;
+//    	while(cur.next!=next) {
+//    		ListNode temp = cur.next;
+//    		cur = cur.next;
+//    		if (cur.next.val<=pivot.val) {
+//    			cur.next = cur.next.next;
+//    			temp.next = pre.next;
+//    			pre.next = temp;
+//    		}
+//    	}
+//    	if (pre.next!=pivot) {
+//    		partition(pre.next, pre, pivot);
+//    	}
+//    	while(pivot.next!=null && pivot.val == pivot.next.val) {
+//    		pivot = pivot.next;
+//    	}
+//    	if(pivot.next!=next) {
+//    		partition(pivot.next,pivot,next);
+//    	}
+//    }
+    
     //Q347
     public List<Integer> topKFrequent(int[] nums, int k) {
     	
@@ -487,6 +988,9 @@ public class Solutions {
     
     /*
      *                 Dynamic Programming 
+     *                 
+     *                 top-down: recursion, cost of going through every for loop
+     *                 bottom-up: filling matrix, cost of space and call built-in functions
      */	
 	
     //Q53
@@ -515,7 +1019,7 @@ public class Solutions {
     	return max;
     }
 
-    //152
+    //Q152
     public int maxProduct(int[] nums) {
     	if (nums.length==0) {
     		return 0;
@@ -552,7 +1056,7 @@ public class Solutions {
         			states[i] = true;
         		}
         	}
-        }
+            }
         return states[s.length()];
     }
     
@@ -576,6 +1080,26 @@ public class Solutions {
     	}
     }
     
+    //Q96
+    public int numTrees(int n) {
+        int[] states = new int[n+1];
+        //states[n] represents the number of possible BST with n nodes
+        //init
+        states[0] = 1;
+        states[1] = 1;
+        //transaction, fill out each state
+        for (int i = 2; i<=n; i++) {
+        	// for each states[n], sum up the different possible BST with node 1...n as root
+        	for (int root = 1; root <=i; root++) {
+        		// the number of possible BST with node i as root is the multiplication of the number of its possible left subtrees and possible number of right subtrees
+            	// root-1 = number of nodes in left subtree
+        		// i-root = number of nodes in right subtree
+        		states[i] += states[root-1]*states[i-root];
+        	}
+        }
+        return states[n];
+    }
+
     //Q322
     public int coinChange(int[] coins, int amount) {
         int[] count = new int[amount+1];
@@ -709,6 +1233,56 @@ public class Solutions {
          
     }
  
+    //Q121
+    public int maxProfit(int[] prices) {
+    	if (prices.length==0) {
+    		return 0;
+    	}
+        int min = prices[0];
+        prices[0] = 0;
+        for (int i=1; i<prices.length; i++) {
+        	if (prices[i]<=min) {
+        		min = prices[i];
+        	} 
+        	prices[i] = Math.max(prices[i-1], prices[i]-min);
+        }
+        return prices[prices.length-1];
+    }
+
+    //Q309
+    //Draw state machine transition
+    /*
+     *        +-----------+   rest   +-----------+
+     *    +-> | beforebuy | <------- | beforebuy | <--+
+     *    |   +-----------+          +-----------+    | sell
+     *    | rest |    |                               |
+     *    +------+    | buy           +---------------+
+     *                |               |                
+     *                |    +-----------+              
+     *                +--- | holdstock | <-+  
+     *                     +-----------+   |
+     *                            |  rest  |
+     *                            +--------+ 
+     */
+    public int maxProfitWithCooldown(int[] prices) {
+    	if (prices.length==0) {
+    		return 0;
+    	}
+    	int[] beforebuy = new int[prices.length];
+    	int[] holdstock = new int[prices.length];
+    	int[] aftersell = new int[prices.length];
+    	beforebuy[0] = 0;
+    	holdstock[0] = -1*prices[0];
+    	aftersell[0] = Integer.MIN_VALUE;
+    	for (int i=1; i<prices.length; i++) {
+    		beforebuy[i] = Math.max(beforebuy[i-1], aftersell[i-1]);
+    		holdstock[i] = Math.max(holdstock[i-1], beforebuy[i-1]-prices[i]);
+    		aftersell[i] = holdstock[i-1] + prices[i];
+    		//can decrease space complexity to O(1) by combining variables
+    	}
+        return Math.max(beforebuy[prices.length-1], aftersell[prices.length-1]);    
+    }
+    
     //Q10
     public boolean isMatch(String s, String p) {
 //    	states[i][j]:
@@ -754,6 +1328,39 @@ public class Solutions {
     		}
     	}
         return results[s.length()][p.length()];
+    }
+    
+    /*                Knapsack Problem                */
+    
+    //Q416
+    //Normal backtrack will exceed time limit
+    //Need to backtrack in the O-1 knapsack way by one-dimension array
+    public boolean canPartition(int[] nums) {
+    	if (nums.length==0) {
+     		return false;
+     	}
+     	int target = 0;
+     	for (int i = 0; i<nums.length; i++) {
+     		target+=nums[i];
+        }
+        if (target % 2 != 0) {
+         	return false;
+        } else {
+         	target = target/2;
+         	boolean[][] dp = new boolean[target+1][nums.length+1];
+         	dp[0][0] = true;
+         	for (int i=1; i<dp.length; i++) {
+         		for(int j = 1; j<dp[0].length; j++) {
+         			if (i-nums[j-1]>=0) {
+         				dp[i][j] = dp[i][j-1] || dp[i-nums[j-1]][j-1];
+         			} else {
+         				dp[i][j] = dp[i][j-1];
+         			}
+         			
+         		}
+            }
+         	return dp[dp.length-1][dp[0].length-1];
+        }
     }
     
     //Q198
@@ -813,8 +1420,48 @@ public class Solutions {
     }
     
     /*
-     *                 Binary Tree
+     *                 Tree
      */	
+    
+    // Q116 
+    // O(1) space  O(n) time  BFS
+    class Node {
+        public int val;
+        public Node left;
+        public Node right;
+        public Node next;
+
+        public Node() {}
+
+        public Node(int _val,Node _left,Node _right,Node _next) {
+            val = _val;
+            left = _left;
+            right = _right;
+            next = _next;
+        }
+    };
+    
+    public Node connect(Node root) {
+    	Node level = root;
+    	while (level != null) {
+    		Node cur = level;
+    		// move on the same level
+    		while (cur != null) {
+    			if (cur.left != null) {
+    				cur.left.next = cur.right;
+    			}
+    			if (cur.right !=null && cur.next!=null) {
+    				cur.right.next = cur.next.left;
+    			}
+    			cur = cur.next;
+    		}
+    		// switch to next level
+    		level = level.left;
+    	}
+    	return root;
+    }
+
+    /*               Binary Tree           */
     class TreeNode {
     	int val;
     	TreeNode left;
@@ -838,6 +1485,91 @@ public class Solutions {
         }
     }
 
+    //Q94
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> ans = new LinkedList<>();
+//        recursion solution
+//        if (root != null) {
+//        	DFS(ans, root);
+//        }
+        // iterative solution
+        TreeNode cur = root;
+        Stack<TreeNode> stack = new Stack<>();
+        while(cur!=null || !stack.empty()){
+            while(cur!=null){
+                stack.add(cur);
+                cur = cur.left;
+            }
+            cur = stack.pop();
+            ans.add(cur.val);
+            cur = cur.right;
+        }
+        return ans;
+        
+    }
+    
+    private void DFS(List<Integer> ans, TreeNode cur) {
+    	if (cur.left != null) {
+    		DFS(ans, cur.left);
+    	}
+    	ans.add(cur.val);
+    	if (cur.right != null) {
+    		DFS(ans, cur.right);
+    	}
+    }
+    
+    //Q101
+    public boolean isSymmetric(TreeNode root) {    	
+        if (root == null) {
+        	return true;
+        }else {
+        	// recursion solution
+//        	return BFS(root.left, root.right);
+        	// iterative solution
+        	// stack can hold null !!!
+        	Stack<TreeNode> stack = new Stack<>();
+        	stack.push(root.left);
+        	stack.push(root.right);
+        	while(stack.size()>0) {
+        		if (stack.size()%2 != 0) {
+        			return false;
+        		}else {
+        			TreeNode right = stack.pop();
+        			TreeNode left = stack.pop();
+        			if (left!=null && right==null) {
+        				return false;
+        			}else if (left==null && right!=null) {
+        				return false;
+        			}else if (left!=null && right!=null) {
+        				if (left.val == right.val) {
+        					// store outer pair
+        					stack.push(left.left);
+        					stack.push(right.right);
+        					// store inner pair
+        					stack.push(left.right);
+        					stack.push(right.left);
+        				}else {
+        					return false;
+        				}
+        			}
+        		}
+        	}
+        	return true;
+        }
+    }
+
+    private boolean BFS(TreeNode left, TreeNode right) {
+    	if (left==null && right==null) {
+    		return true;
+    	}else if (left!=null && right!=null && left.val == right.val) {
+    		boolean outer = BFS(left.left, right.right);
+    		boolean inner = BFS(left.right, right.left);
+    		return outer&&inner;
+    	}else {
+    		return false;
+    	}
+    }
+    
     //Q337
     public int rob3(TreeNode root) {
     	return robDFS(root)[1];
@@ -997,6 +1729,7 @@ public class Solutions {
     	boolean[][] check = new boolean[s.length()][s.length()];
         for (int i = s.length()-1; i>=0; i--) {
         	for (int j = i; j<s.length(); j++) {
+        		// check[i][j] shows whether the substring(j, i) is a palindrome
          		check[i][j] = s.charAt(i) == s.charAt(j) && (j-i<3 || check[i+1][j-1]);
          		if (check[i][j] && j-i+1>max) {
          			start = i;
@@ -1213,20 +1946,6 @@ public class Solutions {
     	}
     }
     
-    public void solve(char[][] board) {
-        for (int i=0; i<board.length; i++) {
-        	for(int j=0; j<board[i].length; j++) {
-        		if(board[i][j]=='O') {
-        			
-        		}
-        	}
-        }
-    }
-    
-    private void surrounded(char[][] grid, int row, int column) {
-    	
-    }
-    
     //Q79
     //convert String to charArray to save time
     public boolean exist(char[][] board, String word) {
@@ -1260,6 +1979,19 @@ public class Solutions {
     		return exist;
     	}
     }
+    
+//    If we take XOR of zero and some bit, it will return that bit: a ⊕ 0 = a
+//    If we take XOR of two same bits, it will return 0: a ⊕ a= 0
+//    a ⊕ b ⊕ a = (a ⊕ a) ⊕ b= 0 ⊕ b = b
+//    so we just XOR all numbers in the list [O(1) memory]
+    public int singleNumber(int[] nums) {
+    	int ans = 0;
+    	for(int i : nums) {
+    		ans^=i;
+    	}
+    	return ans;
+    }
+    
     /*
      *                 Main Method 
      */	
@@ -1281,7 +2013,7 @@ public class Solutions {
     		System.out.println();
     	}
     }
-    
+       
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Solutions s = new Solutions();
@@ -1315,11 +2047,12 @@ public class Solutions {
 		//boolean are originally set false
 //		char[][] board = new char[][]{ {'X', 'X', 'X', 'X'}, {'X', 'O', 'O', 'X'}, {'X', 'O', 'X', 'X'},{'X', 'X', 'O', 'X'}};
 //		s.print2DMatrix(board);
-
-		int[] nums2 = new int[] {1, 3, 3, 4, 5, 6};
-		int[] nums1 = new int[0];
-		double a = s.findMedianSortedArrays(nums1, nums2);
-		System.out.println(a);
+//      System.out.println(s.totalFruit(new int[]{3,3,3,1,2,1,1,2,3,3,4}));
+		ListNode n = s.createSampleLinkedList();
+		s.print(n);
+		ListNode a = s.sortList(n);
+		System.out.println( s.sortList(n)==null);
+		s.print(a);
 	}
 
 }

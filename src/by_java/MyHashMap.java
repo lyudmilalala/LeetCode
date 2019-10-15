@@ -1,4 +1,4 @@
-package java;
+package by_java;
 
 //Q706
 public class MyHashMap {
