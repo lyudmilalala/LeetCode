@@ -1,5 +1,3 @@
-package by_java;
-
 //Q707
 public class MyLinkedList {
 

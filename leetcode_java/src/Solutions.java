@@ -1,5 +1,3 @@
-package by_java;
-
 import java.util.*;
 
 public class Solutions {
@@ -30,7 +28,7 @@ public class Solutions {
         return ans;
     }
 
-	//Q621
+	//Q621     time: O(n)  space: O(1)
 	//Greedy -- always first calculate the tasks with most number
 	 public int leastInterval(char[] tasks, int n) {
 		 int maxOccur = 0; // the most amount of times a task occur
@@ -52,7 +50,7 @@ public class Solutions {
 		 return tasks.length+idles;
 	 }
 	 
-	//Q48
+	//Q48     time: O(n^2)  space: O(1)
     public void rotate(int[][] matrix) {
   
         int start = 0;
@@ -78,7 +76,7 @@ public class Solutions {
         
     }
 	
-    //Q56
+    //Q56     time: O(nlogn)  space: without considering result space
     public int[][] merge(int[][] intervals) {
         Arrays.sort(intervals, (int[] a, int[] b) -> a[0] - b[0]);
         List<int []> temp = new LinkedList<>();
@@ -96,7 +94,7 @@ public class Solutions {
         return ans;
     }
 
-    //Q163 Missing Range
+    //Q163 Missing Range     time: O(n)  space: without considering result space
  	public List<String> findMissingRanges(int[] nums, int lower, int upper) {
  		 List<String> ans = new LinkedList<>();
  		 int cur = lower;
@@ -123,6 +121,8 @@ public class Solutions {
  	}
  	
  	//Q238
+ 	
+ 	// solution1 with division   time: O(n)  space: O(1)
  	public int[] productExceptSelf(int[] nums) {
          int mul = 1; // multiplication without all zeros
          int countZero = 0;
@@ -152,11 +152,28 @@ public class Solutions {
          return nums;
     }
 
+    // solution2 without division   time: O(n)  space: O(1) without considering result space
+ 	// multiply from left to right, and then from right to left
+  	public int[] productExceptSelf2(int[] nums) {
+  		  int[] res = new int[nums.length];
+          int left = 1; 
+          int right = 1; 
+          for (int i = 0; i<nums.length; i++) {
+        	  res[i] = left;
+        	  left = left*nums[i];
+          }
+          for (int j = nums.length-1; j>=0; j--) {
+         	  res[j] = res[j]*right;
+         	  right = right*nums[j];
+          }
+          return res;
+     }
+  	
  	//Q560
     public int subarraySum(int[] nums, int k) {
     	int count = 0, sum = 0;
     	// two pointer start and end
-    	// time complexity O(n^2), space complexity O(n)
+    	// time complexity O(n^2), space complexity O(1)
     	for (int start =0; start<nums.length; start++) {
     		sum = 0;
     		for (int end = start; end <nums.length; end++) {
@@ -179,7 +196,7 @@ public class Solutions {
         return count;
     }
     
-    //Q581
+    //Q581     time: O(n)  space: O(1)
     public int findUnsortedSubarray(int[] nums) {
     	int start = 0;
     	while(start<nums.length-1 && nums[start]<=nums[start+1]) {
@@ -219,7 +236,7 @@ public class Solutions {
     	}
     }
     
-    //Q66
+    //Q66     time: O(n)  space: O(1) without considering result space
     public int[] plusOne(int[] digits) {
     	int i = digits.length-1;
     	digits[i] = digits[i]+1;
@@ -291,7 +308,7 @@ public class Solutions {
     	}
     }
     
-    //Q75
+    //Q75     time: O(n)  space: O(1)
     public void sortColors(int[] nums) {
     	int firstOne = 0; int firstTwo = nums.length-1;
         for(int i=0; i<=firstTwo; i++) {
@@ -395,7 +412,8 @@ public class Solutions {
     }
 
     //Q475 Two-pointer
-    //keep the pointer of the heater array to the left heater of the current house
+    //starting from left, keep the pointer of the heater array to the cloest heater of the current house
+    //time: O(m+n) without sort  space: O(1)
     public int findRadius(int[] houses, int[] heaters) {
     	Arrays.parallelSort(houses);
     	Arrays.parallelSort(heaters);
@@ -452,7 +470,6 @@ public class Solutions {
     			min = min ==-1? Math.min(countAB0, countBB0) : Math.min(min, Math.min(countAB0, countBB0));
     		}
     	}
-    	
     	return min;
     }
     
@@ -461,6 +478,9 @@ public class Solutions {
 	 */	
     
     //Q3
+    // m  -- number of characters, n -- number of different characters
+    // time: O(n), fast visit each index
+    // space: O(min(m, n))
     public int lengthOfLongestSubstring(String s) {
     	HashMap<Character, Integer> map = new HashMap<>();
         int slow = 0, fast = 0, max = 0;
@@ -624,7 +644,7 @@ public class Solutions {
     	return mylists.size()==1? mylists : merge(mylists);
     }
 
-    //Q141
+    //Q141     time: O(n)   space: O(1)
     public boolean hasCycle(ListNode head) {
     	ListNode fast = head;
         ListNode slow = head;
@@ -688,6 +708,62 @@ public class Solutions {
         return dummy.next;
     }
     
+    //Q160
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        Set<ListNode> set = new HashSet<ListNode>();
+        ListNode cur = headA;
+        while (cur != null) {
+        	set.add(cur);
+        	cur = cur.next;
+        }
+        cur = headB;
+        while (cur != null) {
+        	if (set.contains(cur)) {
+        		break;
+        	}
+        	cur = cur.next;
+        }
+    	return cur;
+    }
+
+    //Q445     time: O(max(m, n))   space: O(m+n)
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+    	Stack<Integer> s1 = new Stack<>();
+    	while (l1.next != null ) {
+    		s1.push(l1.val);
+    		l1 = l1.next;
+    	}
+    	s1.push(l1.val);
+    	
+    	Stack<Integer> s2 = new Stack<>();
+    	while (l2.next != null ) {
+    		s2.push(l2.val);
+    		l2 = l2.next;
+    	}
+    	s2.push(l2.val);
+    	
+    	int carry = 0;
+    	ListNode dummy = new ListNode(-1);
+    	while (s1.size() > 0 || s2.size() > 0 || carry > 0) {
+    		int part1 = 0;
+    		int part2 = 0;
+    		if (s1.size() > 0) {
+    			part1 = s1.pop().intValue();
+    		}  
+    		if (s2.size() > 0) {
+    			part2 = s2.pop().intValue();
+    		}
+    		int curr = part1 + part2 + carry;
+    		carry = curr/10;
+    		curr = curr%10;
+    		ListNode currnode = new ListNode(curr);
+    		currnode.next = dummy.next;
+    		dummy.next = currnode;
+    	}
+    	
+    	return dummy.next;
+    }
+    
     //Q234
     public boolean isPalindrome(ListNode head) {
         if (head == null || head.next == null) {
@@ -745,18 +821,6 @@ public class Solutions {
     	head.next.next.next = new ListNode(4);
     	head.next.next.next.next = new ListNode(0);
     	return head;
-    }
-    
-    private void print(ListNode head) {
-    	ListNode cur = head;
-    	StringBuilder sb = new StringBuilder();
-    	while(cur!=null) {
-    		sb.append(cur.val);
-    		sb.append(" -> ");
-    		cur = cur.next;
-    	}
-    	sb.delete(sb.length()-4, sb.length()-1);
-    	System.out.println(sb.toString());
     }
     
     //Q148 legitimate solution time complexity O(nlogn), space complexity O(1)
@@ -928,7 +992,7 @@ public class Solutions {
 	 *                        Stacks 
 	 */	
 	
-	//Q1
+	//Q1     time: O(n)   space: O(n)
     public int[] twoSum(int[] nums, int target) {
         Map<Integer, Integer> map = new HashMap<>();
         int complement = -1;
@@ -942,6 +1006,27 @@ public class Solutions {
             i++;
         }
         return new int[] { map.get(complement), i };
+    }
+    
+    //Q167     two pointer    time: wrost O(N)   space: O(1)
+    public int[] twoSumWithSortedArray(int[] numbers, int target) {
+    	int small = 0;
+    	int large = numbers.length-1;
+    	while (small < large) {
+    		if (numbers[small] + numbers[large] > target) {
+        		large--;
+        	} else if (numbers[small] + numbers[large] < target) {
+        		small++;
+        	} else {
+        		break;
+        	}
+    	}
+    	int[] ans = {-1, -1};
+    	if (small < large) {
+    		ans[0] = small+1;
+    		ans[1] = large+1;
+    	} 
+    	return ans;
     }
     
 	//Q71
@@ -986,6 +1071,67 @@ public class Solutions {
         return stack.isEmpty();
     }
     
+    //Q844
+    // m -- length of String S, n-- length of String T
+    // time: O(m+n)  space: O(m+n)
+    public boolean backspaceCompare1(String S, String T) {
+    	char[] str1 = S.toCharArray();
+    	StringBuilder s = new StringBuilder(S.length());
+    	for (char c : str1) {
+    		if (c!='#') {
+    			s.append(c);
+    		} else if (c=='#' && s.length()>0){
+    			s.deleteCharAt(s.length()-1);
+    		}
+    	}
+    	char[] str2 = T.toCharArray();
+    	StringBuilder t = new StringBuilder(T.length());
+    	for (char c : str2) {
+    		if (c!='#') {
+    			t.append(c);
+    		} else if (c=='#' && t.length()>0){
+    			t.deleteCharAt(t.length()-1);
+    		}
+    	}
+    	return s.toString().compareTo(t.toString())==0;
+    }
+    
+    // use two pointer
+    // time: O(m+n)  space: O(1)
+    public boolean backspaceCompare2(String S, String T) {
+    	int i = S.length() - 1, j = T.length() - 1;
+        int skipS = 0, skipT = 0;
+
+        while (i >= 0 || j >= 0) { // While there may be chars in build(S) or build (T)
+            while (i >= 0) { // Find position of next possible char in build(S)
+                if (S.charAt(i) == '#') {
+                	skipS++; 
+                	i--;
+                } else if (skipS > 0) {
+                	skipS--; 
+                	i--;
+                } else break;
+            }
+            while (j >= 0) { // Find position of next possible char in build(T)
+                if (T.charAt(j) == '#') {
+                	skipT++; 
+                	j--;
+                } else if (skipT > 0) {
+                	skipT--; 
+                	j--;
+                } else break;
+            }
+            // If two actual characters are different
+            if (i >= 0 && j >= 0 && S.charAt(i) != T.charAt(j))
+                return false;
+            // If expecting to compare char vs nothing
+            if ((i >= 0) != (j >= 0))
+                return false;
+            i--; j--;
+        }
+        return true;
+    }
+    
     /*
      *                 Dynamic Programming 
      *                 
@@ -1019,6 +1165,37 @@ public class Solutions {
     	return max;
     }
 
+    //Q62
+    
+   public int uniquePaths(int m, int n) {
+	   // backtracking (top-down) solution -- exceeds time limit
+	   // return  backtrack( 1, 1, m, n) ;
+	   if (m == 0 || n == 0) {
+		   return 0;
+	   }
+	   int[][] grid = new int[n][m];
+	   for (int i = n-1; i>=0; i--) {
+		   for (int j = m-1; j>=0; j--) {
+			   if (i == n-1 || j == m-1) {
+				   grid[i][j] = 1;
+			   } else {
+				   grid[i][j] = grid[i+1][j] + grid[i][j+1];
+			   }
+		   }
+	   }
+	   return grid[0][0];
+    }
+//
+//   private int backtrack( int cur_x, int cur_y, int max_x, int max_y) {
+//	   if (cur_x == max_x || cur_y == max_y) {
+//		   return 1;
+//	   } else {
+//		   int cumulate_x = backtrack(cur_x+1, cur_y, max_x, max_y);
+//		   int cumulate_y = backtrack(cur_x, cur_y+1, max_x, max_y);
+//		   return cumulate_x + cumulate_y;
+//	   }
+//   }
+    
     //Q152
     public int maxProduct(int[] nums) {
     	if (nums.length==0) {
@@ -1101,8 +1278,10 @@ public class Solutions {
     }
 
     //Q322
+    // n -- total amount, m -- number of different types of coins
+    // time: O(nm)   space: O(n+1) = O(n)
     public int coinChange(int[] coins, int amount) {
-        int[] count = new int[amount+1];
+    	int[] count = new int[amount+1];
     	Arrays.fill(count, amount+1);
     	count[0] = 0;
         
@@ -1113,15 +1292,17 @@ public class Solutions {
     			}
     		}
     	}
-
     	return count[amount] < amount+1 ? count[amount] : -1;
     }
     
     //Q518
+    // n -- total amount, m -- number of different types of coins
+    // time: O(nm)   space: O(n+1) = O(n)
     public int change(int amount, int[] coins) {
         int count[] = new int[amount+1];
         count[0] = 1;
         for (int c : coins) {
+        	// count[i] represent the number of ways to approach amount i with coins with value less than c (if sorted)
     		for (int i=1; i< count.length; i++) {
     			if (c <= i) {
     				count[i] += count[i-c];
@@ -1233,8 +1414,8 @@ public class Solutions {
          
     }
  
-    //Q121
-    public int maxProfit(int[] prices) {
+    //Q121     time: O(n)   space: O(n) 
+    public int maxProfit1(int[] prices) {
     	if (prices.length==0) {
     		return 0;
     	}
@@ -1249,20 +1430,124 @@ public class Solutions {
         return prices[prices.length-1];
     }
 
+    //Q122
+    //Greedy algorithm, only count when today's price is higher than yesterday
+    //time: O(n), space: O(1)
+    public int maxProfit2(int[] prices) {
+    	int maxprofit = 0;
+        for (int i = 1; i < prices.length; i++) {
+            if (prices[i] > prices[i - 1]) {
+            	maxprofit += prices[i] - prices[i - 1];
+            }
+        }
+        return maxprofit;
+    }
+
+    //Q123     time: O((N-1)*2) = O(N)   space : O(N*3*2) = O(N)
+    public int maxProfit3(int[] prices) {
+    	if (prices.length == 0) {
+    		return 0;
+    	}
+    	// create a 3D matrix profit[i][j][k]
+    	// i represent each day, max i = prices.length
+    	// j represent the times of transaction, max j = 2 + 1
+    	// j = 0: not buy any stock yet, j = N: the period after bought stock for the Nth time and before bought it for the N+1th time
+    	// k represent not holding stock (0) or holding stock (1)
+    	int maxTrans = 2;
+    	int[][][] profit = new int[prices.length][maxTrans+1][2]; 
+    	profit[0][0][0] = 0;
+    	profit[0][0][1] = Integer.MIN_VALUE;
+    	profit[0][1][1] = -prices[0];
+    	// use 0 instead of  Integer.MIN_VALUE to avoid be reversed to  Integer.MAX_VALUE
+    	profit[0][1][0] = 0;  // assume finish the 1st bought before game start, but profit is 0 because it is the inital value
+    	profit[0][2][1] = Integer.MIN_VALUE;
+    	profit[0][2][0] = 0; // assume finish the 2nd bought before game start, but profit is 0 because it is the inital value
+        
+    	for (int i = 1; i<prices.length; i++) {
+    		for (int j = 1; j< maxTrans+1; j++) {
+    			// for not holding stock at the current time, keep the previous not holding, or sell the stock held
+    			profit[i][j][0] = Math.max(profit[i-1][j][0], profit[i-1][j][1]+prices[i]);
+    			// for getting stock at the current time, keep holding stock, or buy in stock
+    			profit[i][j][1] = Math.max(profit[i-1][j][1], profit[i-1][j-1][0]-prices[i]);
+    		}
+    	}
+    	
+    	// select maxprofit from the last day, may not used up all transfers
+    	int maxprofit = Integer.MIN_VALUE;
+    	for (int j = 1; j< maxTrans+1; j++) {
+    		maxprofit = Math.max(maxprofit, profit[prices.length-1][j][0]);
+    	}
+    	return maxprofit;
+    }
+    
+    //Q188     time: if greedy, O(N), otherwise O(Nk)   space: if greedy, O(1), otherwise O(N*(k+1)*2)
+    public int maxProfit(int k, int[] prices) {
+    	if (prices.length <= 1 || k==0) {
+    		return 0;
+    	}
+    	int maxprofit = 0;
+    	if (k > prices.length/2 || (k==prices.length/2 && prices.length%2==0)) {
+    		// a transfer needs at least two days. Indeed, if k >= prices.length/2, transfers can cover all days flexibly
+    		// Use Greedy
+    		for (int i = 1; i < prices.length; i++) {
+    			 if (prices[i] > prices[i - 1]) {
+    	            	maxprofit += prices[i] - prices[i - 1];
+    	         }
+    		}
+    	} else {
+    		// create a 3D matrix profit[i][j][k]
+        	// i represent each day, max i = prices.length
+        	// j represent the times of transaction, max j = 2 + 1
+        	// j = 0: not buy any stock yet, j = N: the period after bought stock for the Nth time and before bought it for the N+1th time
+        	// k represent not holding stock (0) or holding stock (1)
+        	int maxTrans = k;
+        	int[][][] profit = new int[prices.length][maxTrans+1][2]; 
+        	
+        	for (int i = 0; i<prices.length; i++) {
+        		for (int j = 1; j< maxTrans+1; j++) {
+        			if (i== 0) {
+        				if (j==0) {
+        					profit[i][j][0] = 0;
+        			    	profit[i][j][1] = Integer.MIN_VALUE;
+        				} else if (j==1) {
+        					profit[i][j][1] = -prices[0];
+        			    	// use 0 instead of  Integer.MIN_VALUE to avoid be reversed to  Integer.MAX_VALUE
+        			    	profit[i][j][0] = 0;  // assume finish the 1st bought before game start, but profit is 0 because it is the inital value
+        				} else {
+        					profit[i][j][1] = Integer.MIN_VALUE;
+        		        	profit[i][j][0] = 0; // assume finish the 2nd bought before game start, but profit is 0 because it is the inital value
+        				}
+        			} else {
+        				// for not holding stock at the current time, keep the previous not holding, or sell the stock held
+            			profit[i][j][0] = Math.max(profit[i-1][j][0], profit[i-1][j][1]+prices[i]);
+            			// for getting stock at the current time, keep holding stock, or buy in stock
+            			profit[i][j][1] = Math.max(profit[i-1][j][1], profit[i-1][j-1][0]-prices[i]);
+        			}
+        			// select maxprofit from the last day, may not used up all transfers
+        			if (i == prices.length-1) {
+        				maxprofit = Math.max(maxprofit, profit[i][j][0]);
+        			}
+        		}
+        	}
+    	}
+    	return maxprofit;
+    }
+    
     //Q309
+    //time: O(N)   space: O(3N) = O(N)
     //Draw state machine transition
     /*
-     *        +-----------+   rest   +-----------+
-     *    +-> | beforebuy | <------- | beforebuy | <--+
-     *    |   +-----------+          +-----------+    | sell
-     *    | rest |    |                               |
-     *    +------+    | buy           +---------------+
-     *                |               |                
-     *                |    +-----------+              
-     *                +--- | holdstock | <-+  
-     *                     +-----------+   |
-     *                            |  rest  |
-     *                            +--------+ 
+     *           +-----------+   rest    +---------+
+     *    +-> | beforebuy  | <-------| aftersell | <--+
+     *    |      +-----------+               +--------+       | sell
+     *    |   rest  |           |                                            |
+     *    +------+   buy |          +-------------------+
+     *                             |          |                
+     *                   +-----------+              
+     *                    | holdstock | <-+  
+     *                   +-----------+    |
+     *                                   |  rest  |
+     *                                   +-----+ 
      */
     public int maxProfitWithCooldown(int[] prices) {
     	if (prices.length==0) {
@@ -1278,9 +1563,26 @@ public class Solutions {
     		beforebuy[i] = Math.max(beforebuy[i-1], aftersell[i-1]);
     		holdstock[i] = Math.max(holdstock[i-1], beforebuy[i-1]-prices[i]);
     		aftersell[i] = holdstock[i-1] + prices[i];
-    		//can decrease space complexity to O(1) by combining variables
+    		//can decrease space complexity to O(1) by use only a int to represent pre_beforebuy, pre_holdstock, pre_aftersell
     	}
         return Math.max(beforebuy[prices.length-1], aftersell[prices.length-1]);    
+    }
+    
+    //Q714     time: O(N)   space: O(N*2) = O(N)
+    public int maxProfit(int[] prices, int fee) {
+    	if (prices.length==0) {
+    		return 0;
+    	}
+    	// profit[i][0] represent not holding stock at time i
+    	// profit[i][1] represent holding stock at time i
+    	int[][] profit = new int[prices.length][2];
+    	profit[0][0] = 0;
+    	profit[0][1] = -1*prices[0];
+    	for (int i = 1; i<prices.length; i++) {
+    		profit[i][0] = Math.max(profit[i-1][0], profit[i-1][1] + prices[i]-fee);
+    		profit[i][1] = Math.max(profit[i-1][0]- prices[i], profit[i-1][1]);
+    	}
+    	return profit[prices.length-1][0];
     }
     
     //Q10
@@ -1505,7 +1807,6 @@ public class Solutions {
             cur = cur.right;
         }
         return ans;
-        
     }
     
     private void DFS(List<Integer> ans, TreeNode cur) {
@@ -1518,6 +1819,31 @@ public class Solutions {
     	}
     }
     
+    //Q102
+    public List<List<Integer>> levelOrder(TreeNode root) {
+    	// iterative
+    	 List<List<Integer>> ans = new LinkedList<>();
+    	 List<TreeNode> cur_level = new LinkedList<>();
+    	 List<TreeNode> next_level = new LinkedList<>();
+    	 cur_level.add(root);
+    	 while (cur_level.size()>0) {
+    		 next_level = new LinkedList<>();
+    		 List<Integer> level_ans = new LinkedList<>();
+    		 for(TreeNode tn : cur_level) {
+    			 if (tn != null) {
+                     level_ans.add(tn.val);
+                     next_level.add(tn.left);
+        			 next_level.add(tn.right);
+                 }
+    		 }
+    		 if (level_ans.size() > 0) {
+    			 ans.add(level_ans);
+    		 }
+    		 cur_level =  next_level;
+    	 }
+    	 return ans;
+    }
+
     //Q101
     public boolean isSymmetric(TreeNode root) {    	
         if (root == null) {
@@ -1760,7 +2086,7 @@ public class Solutions {
     /*
      *                 Backtracking 
      */	
-    
+       
     //Q78
     public List<List<Integer>> subsets(int[] nums) {
     	List<List<Integer>> results = new LinkedList<>();
@@ -1996,7 +2322,19 @@ public class Solutions {
      *                 Main Method 
      */	
     
-    public void print2DMatrix(int[][] matrix) {
+    private void print(ListNode head) {
+    	ListNode cur = head;
+    	StringBuilder sb = new StringBuilder();
+    	while(cur!=null) {
+    		sb.append(cur.val);
+    		sb.append(" -> ");
+    		cur = cur.next;
+    	}
+    	sb.delete(sb.length()-4, sb.length()-1);
+    	System.out.println(sb.toString());
+    }
+    
+    private void print2DMatrix(int[][] matrix) {
     	for(int i = 0; i<matrix.length; i++) {
     		for(int j=0; j<matrix[0].length; j++) {
     			System.out.print(matrix[i][j]+" ");
@@ -2005,7 +2343,7 @@ public class Solutions {
     	}
     }
     
-    public void print2DMatrix(char[][] matrix) {
+    private void print2DMatrix(char[][] matrix) {
     	for(int i = 0; i<matrix.length; i++) {
     		for(int j=0; j<matrix[0].length; j++) {
     			System.out.print(matrix[i][j]+" ");
@@ -2048,11 +2386,13 @@ public class Solutions {
 //		char[][] board = new char[][]{ {'X', 'X', 'X', 'X'}, {'X', 'O', 'O', 'X'}, {'X', 'O', 'X', 'X'},{'X', 'X', 'O', 'X'}};
 //		s.print2DMatrix(board);
 //      System.out.println(s.totalFruit(new int[]{3,3,3,1,2,1,1,2,3,3,4}));
-		ListNode n = s.createSampleLinkedList();
-		s.print(n);
-		ListNode a = s.sortList(n);
-		System.out.println( s.sortList(n)==null);
-		s.print(a);
+//		ListNode n = s.createSampleLinkedList();
+//		s.print(n);
+//		ListNode a = s.sortList(n);
+//		System.out.println( s.sortList(n)==null);
+//		s.print(a);
+		System.out.println(s.uniquePaths(51, 9));
+		
 	}
 
 }
