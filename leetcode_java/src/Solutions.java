@@ -2019,6 +2019,149 @@ public class Solutions {
     }
     
     /*
+     *                 Graph
+     */
+    
+    //Q207
+    
+    // Topological sort     
+    // N -- number of nodes, M -- number of edges
+    //time: O(N+M)   space: O(N+M)
+    public boolean canFinishTopological(int numCourses, int[][] prerequisites) {
+    	//indegrees[i]: how many node should be visited before visit i
+    	int[] indegrees = new int[numCourses];
+    	//key: the start node   value: a list of the end node
+    	HashMap<Integer, ArrayList<Integer>> edges = new HashMap<>(); 
+    	
+    	//initialize indegrees and edges
+    	for (int[] p : prerequisites) {
+    		indegrees[p[0]]++;
+    		if (!edges.containsKey(p[1])) {
+    			edges.put(p[1], new ArrayList<Integer>());
+    		} 
+    		ArrayList<Integer> destList = edges.get(p[1]);
+    		destList.add(p[0]);
+    	}
+    	
+    	//push nodes with not income to queue for poping them first
+    	Queue<Integer> queue = new LinkedList<>();
+    	for (int i=0; i<indegrees.length; i++) {
+    		if (indegrees[i] == 0) {
+    			queue.add(i);
+    		}
+    	}
+    	
+    	//topological sort
+    	while (!queue.isEmpty()) {
+    		int curr = queue.poll();
+    		numCourses--;
+    		if (edges.containsKey(curr)) {
+    			for (int next : edges.get(curr)) {
+    				indegrees[next]--;
+        			if (indegrees[next] == 0) {
+        				queue.add(next);
+        			}
+    			}
+    		}
+    	}
+    	return numCourses == 0;
+    }
+    
+    //DFS
+    // N -- number of nodes, M -- number of edges
+    //time: O(N+M)   space: O(N+M)
+    public boolean canFinishDFS(int numCourses, int[][] prerequisites) {
+    	// 0: has not been visited yet
+    	// -1: has been visited by other nodes
+    	// 1: has been visited by the current path
+    	int[] hasVisited = new int[numCourses];
+    	//key: the start node   value: a list of the end node
+    	HashMap<Integer, ArrayList<Integer>> edges = new HashMap<>(); 
+    	//initialize edges
+    	for (int[] p : prerequisites) {
+    		if (!edges.containsKey(p[1])) {
+    			edges.put(p[1], new ArrayList<Integer>());
+    		} 
+    		ArrayList<Integer> destList = edges.get(p[1]);
+    		destList.add(p[0]);
+    	}
+    	//DFS
+    	for (int i=0; i<numCourses; i++) {
+    		if (!dfs(i, edges, hasVisited)) {
+				return false;
+			}
+    	}
+    	return true;
+    }
+    
+    public boolean dfs(int curr, HashMap<Integer, ArrayList<Integer>> edges, int[] hasVisited) {
+    	// current node has been checked, do not need to go again
+    	if (hasVisited[curr] == -1) {
+    		return true;
+    	}
+    	// current trip has a circle
+    	if (hasVisited[curr] == 1) {
+    		return false;
+    	}
+    	//goes down
+    	hasVisited[curr] = 1;
+    	if (edges.containsKey(curr)) {
+			for (int i : edges.get(curr)) {
+				if (!dfs(i, edges, hasVisited)) {
+					return false;
+				}
+			}
+		}
+    	//finish, back up
+    	hasVisited[curr] = -1;
+		return true;
+    }
+    
+    //Q210     time: O(N)   space: O(N)
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
+    	//indegrees[i]: how many node should be visited before visit i
+    	int[] indegrees = new int[numCourses];
+    	//key: the start node   value: a list of the end node
+    	HashMap<Integer, ArrayList<Integer>> edges = new HashMap<>(); 
+    	int[] ans = new int[numCourses];
+    	int pointer = 0;
+    	
+    	//initialize indegrees and edges
+    	for (int[] p : prerequisites) {
+    		indegrees[p[0]]++;
+    		if (!edges.containsKey(p[1])) {
+    			edges.put(p[1], new ArrayList<Integer>());
+    		} 
+    		ArrayList<Integer> destList = edges.get(p[1]);
+    		destList.add(p[0]);
+    	}
+    	
+    	//push nodes with not income to queue for poping them first
+    	Queue<Integer> queue = new LinkedList<>();
+    	for (int i=0; i<indegrees.length; i++) {
+    		if (indegrees[i] == 0) {
+    			queue.add(i);
+    		}
+    	}
+    	
+    	while (!queue.isEmpty()) {
+    		int curr = queue.poll();
+    		//add the current pop out to outputs
+    		ans[pointer] = curr;
+    		pointer++;
+    		if (edges.containsKey(curr)) {
+    			for (int next : edges.get(curr)) {
+    				indegrees[next]--;
+    				if (indegrees[next]==0) {
+    					queue.add(next);
+    				}
+    			}
+    		}
+    	}
+    	return pointer==numCourses? ans : new int[0];
+    }
+    
+    /*
      *                 Palindrome
      */	
     
@@ -2083,6 +2226,7 @@ public class Solutions {
         }
         return count;
     }
+    
     /*
      *                 Backtracking 
      */	
@@ -2270,6 +2414,64 @@ public class Solutions {
     		dfs(grid, row, column-1);
     		dfs(grid, row, column+1);
     	}
+    }
+    
+    //Q1162
+    //BFS each grid only be added into queue and visited once
+    //time: O(n^2)   space: at most O(n^2), at least O(1) for queue
+    public int maxDistance(int[][] grid) {
+    	if (grid.length==0 || grid[0].length == 0) {
+    		return -1;
+    	}
+    	int m = grid.length;
+    	int n = grid[0].length;
+    	Queue<int[]> queue = new ArrayDeque<>();
+    	
+    	//pick up lands
+    	for (int row=0; row<m; row++) {
+        	for (int column=0; column<n; column++) {
+        		if (grid[row][column] == 1) {
+        			queue.add(new int[]{row, column});
+        		}
+        	}
+        }
+    	
+    	// all lands or all seas
+    	if (queue.size() == 0 || queue.size() == m*n) {
+    		return -1;
+    	}
+    	
+    	//pop out from queue
+    	//because all distances are 1, so the order of grid get into queue is sorted
+    	//the first grids get into the queue are always closer to the land
+    	int[] curr = null;
+    	while (!queue.isEmpty()) {
+    		curr = queue.poll();
+    		//curr[0] is current row, curr[1] is current column
+    		//add its up grid into queue if valid
+    		if (curr[0]-1>=0 && grid[curr[0]-1][curr[1]] == 0) {
+    			grid[curr[0]-1][curr[1]] = grid[curr[0]][curr[1]]+1;
+    			queue.add(new int[] {curr[0]-1, curr[1]});
+    		}
+    		//add its down grid into queue if valid
+    		if (curr[0]+1<m && grid[curr[0]+1][curr[1]] == 0) {
+    			grid[curr[0]+1][curr[1]] = grid[curr[0]][curr[1]]+1;
+    			queue.add(new int[] {curr[0]+1, curr[1]});
+    		}
+    		//add its left grid into queue if valid
+    		if (curr[1]-1>=0 && grid[curr[0]][curr[1]-1] == 0) {
+    			grid[curr[0]][curr[1]-1] = grid[curr[0]][curr[1]]+1;
+    			queue.add(new int[] {curr[0], curr[1]-1});
+    		}
+    		//add its left grid into queue if valid
+    		if (curr[1]+1<n && grid[curr[0]][curr[1]+1] == 0) {
+    			grid[curr[0]][curr[1]+1] = grid[curr[0]][curr[1]]+1;
+    			queue.add(new int[] {curr[0], curr[1]+1});
+    		}
+    	}
+    	
+    	//did not decrease the original 1 representing land, so need to minus 1 for final result
+    	return grid[curr[0]][curr[1]]-1;
     }
     
     //Q79
