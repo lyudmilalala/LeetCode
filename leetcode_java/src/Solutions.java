@@ -28,6 +28,31 @@ public class Solutions {
         return ans;
     }
 
+	//Q88     time: O(m+n)   space: O(1)
+	//Two pointer, travel from back to front to save space
+	public void merge(int[] nums1, int m, int[] nums2, int n) {
+		int p1 = m-1;
+		int p2 = n-1;
+		int curr = m+n-1;
+		while (p1>=0 || p2>=0) {
+			if (p1<0) {
+				nums1[curr] = nums2[p2];
+				p2--;
+			} else if (p2<0) {
+				nums1[curr] = nums1[p1];
+				p1--;
+			} else {
+				if (nums1[p1]>nums2[p2]) {
+					nums1[curr] = nums1[p1];
+					p1--;
+				} else {
+					nums1[curr] = nums2[p2];
+					p2--;
+				}
+			}
+			curr--;
+		}
+	}
 	//Q621     time: O(n)  space: O(1)
 	//Greedy -- always first calculate the tasks with most number
 	 public int leastInterval(char[] tasks, int n) {
@@ -307,6 +332,18 @@ public class Solutions {
     		}
     	}
     }
+
+    //Q26     Two pointer
+    public int removeDuplicates(int[] nums) {
+    	int slow = 0;
+    	for (int fast = 1; fast<nums.length; fast++) {
+    		if (nums[slow]!=nums[fast]) {
+    			slow++;
+    			nums[slow] = nums[fast];
+    		}
+    	}
+    	return slow+1;
+    }
     
     //Q75     time: O(n)  space: O(1)
     public void sortColors(int[] nums) {
@@ -497,6 +534,44 @@ public class Solutions {
         return max;
     }
 
+    //Q8
+    public int myAtoi(String str) {
+    	char[] arr = str.toCharArray();
+    	int i = 0;
+    	//clean spaces before number
+    	while(i<arr.length && arr[i]==' ') {
+    		i++;
+    	}
+    	if (i==arr.length) {
+    		return 0;
+    	}
+    	//check sign
+    	int sign = 1;
+    	if (arr[i]=='+') {
+    		sign = 1;
+    		i++;
+    	} else if (arr[i]=='-') {
+    		sign = -1;
+    		i++;
+    	} else if (!Character.isDigit(arr[i])) {
+    		return 0;
+    	}
+    	
+    	//get digits
+    	int num = 0;
+    	while(i<arr.length && Character.isDigit(arr[i])) {
+    		int digit = arr[i] - '0';
+    		//both num and digit may overflow INT_MAX
+    		//num*10+digit<INT_MAX  ==>   num<(INT_MAX-digit)/10
+    		if (num > (Integer.MAX_VALUE-digit)/10) {
+    			return sign == 1? Integer.MAX_VALUE : Integer.MIN_VALUE;
+    		}
+    		num = num*10+digit;
+    		i++;
+    	}
+    	return num*sign;
+    }
+    
     //Q76
     public String minWindow(String s, String t) {
         HashMap<Character, Integer> map = new HashMap<>();
@@ -556,6 +631,35 @@ public class Solutions {
 		}
 		return sb.reverse().toString();
 	}
+	
+	//Q11
+	// Go over the upper right triangle of matrix     time: O(n^2/2)   space: O(1)
+	// Two pointer     time: O(n)   space: O(1)
+	public int maxArea(int[] height) {
+		int max = 0;
+		
+		// Go over the upper right triangle of matrix
+//		for (int start=0; start<height.length-1; start++) {
+//			for (int end=start+1; end<height.length; end++) {
+//				int temp = Math.min(height[start], height[end])*(end-start);
+//				max = Math.max(temp, max);
+//			}
+//		}
+		
+		//Two pointer
+		int low = 0;
+		int high = height.length-1;
+		while (low<high) {
+            int temp = Math.min(height[low], height[high])*(high-low);
+			max = Math.max(temp, max);
+			if (height[high]>=height[low]) {
+				low++;
+			} else {
+				high--;
+			}
+		}
+		return max;
+    }
 	
 	/*
 	 *                        LinkedList 
@@ -1819,31 +1923,56 @@ public class Solutions {
     	}
     }
     
-    //Q102
+    //Q102     N -- numnber of tree nodes  
+    //BFS time: O(N)  space: O(N)
     public List<List<Integer>> levelOrder(TreeNode root) {
-    	// iterative
-    	 List<List<Integer>> ans = new LinkedList<>();
-    	 List<TreeNode> cur_level = new LinkedList<>();
-    	 List<TreeNode> next_level = new LinkedList<>();
-    	 cur_level.add(root);
-    	 while (cur_level.size()>0) {
-    		 next_level = new LinkedList<>();
-    		 List<Integer> level_ans = new LinkedList<>();
-    		 for(TreeNode tn : cur_level) {
-    			 if (tn != null) {
-                     level_ans.add(tn.val);
-                     next_level.add(tn.left);
-        			 next_level.add(tn.right);
-                 }
-    		 }
-    		 if (level_ans.size() > 0) {
-    			 ans.add(level_ans);
-    		 }
-    		 cur_level =  next_level;
-    	 }
-    	 return ans;
+    	List<List<Integer>> ans = new LinkedList<>();
+    	Queue<TreeNode> cur_level = new LinkedList<>();
+    	cur_level.add(root);
+    	while (!cur_level.isEmpty()) {
+    		int cur_size = cur_level.size();
+    		List<Integer> level_ans = new LinkedList<>();
+    		while (cur_size>0) {
+        		TreeNode cur_node = cur_level.poll();
+        		if (cur_node != null) {
+        			level_ans.add(cur_node.val);
+        			cur_level.add(cur_node.left);
+        			cur_level.add(cur_node.right);
+        		}
+        		cur_size--;
+        	}
+    		if (level_ans.size() > 0) {
+   			 ans.add(level_ans);
+   		    }
+    	}
+    	return ans;
     }
-
+    
+    //Q107     N -- numnber of tree nodes  
+    //BFS time: O(N)  space: O(N)
+    public List<List<Integer>> levelOrderBottom(TreeNode root) {
+    	List<List<Integer>> ans = new LinkedList<>();
+    	Queue<TreeNode> cur_level = new LinkedList<>();
+    	cur_level.add(root);
+    	while (!cur_level.isEmpty()) {
+    		int cur_size = cur_level.size();
+    		List<Integer> level_ans = new LinkedList<>();
+    		while (cur_size>0) {
+        		TreeNode cur_node = cur_level.poll();
+        		if (cur_node != null) {
+        			level_ans.add(cur_node.val);
+        			cur_level.add(cur_node.left);
+        			cur_level.add(cur_node.right);
+        		}
+        		cur_size--;
+        	}
+    		if (level_ans.size() > 0) {
+   			 ans.add(0, level_ans);
+   		    }
+    	}
+    	return ans;
+    }
+    
     //Q101
     public boolean isSymmetric(TreeNode root) {    	
         if (root == null) {
@@ -2161,6 +2290,53 @@ public class Solutions {
     	return pointer==numCourses? ans : new int[0];
     }
     
+    //Q417
+    //DFS     time: O(mn)   space: O(2mn) = O(mn)
+    //Can also BFS, use two more queues
+    public List<List<Integer>> pacificAtlanticDFS(int[][] matrix) {
+    	List<List<Integer>> ans = new LinkedList<List<Integer>>();
+    	if (matrix.length == 0 || matrix[0].length == 0) {
+    		return ans;
+    	}
+    	int[][] pac = new int[matrix.length][matrix[0].length];
+    	int[][] atl = new int[matrix.length][matrix[0].length];
+    	for (int row = 0; row < matrix.length; row++) {
+    		//check pacific
+    		dfs (matrix, pac, row, 0, matrix[row][0]);
+    		//check atlantic
+    		dfs (matrix, atl, row, matrix[0].length-1, matrix[row][matrix[0].length-1]);
+    	}
+    	for (int column = 0; column < matrix[0].length; column++) {
+    		//check pacific
+    		dfs (matrix, pac, 0, column, matrix[0][column]);
+    		//check atlantic
+    		dfs (matrix, atl, matrix.length-1, column, matrix[matrix.length-1][column]);
+    	}
+    	for (int i = 0; i<matrix.length; i++) {
+    		for (int j = 0; j<matrix[0].length; j++) {
+    			if (pac[i][j] == 1 && atl[i][j] == 1) {
+    				List<Integer> point = new LinkedList<Integer>();
+    				point.add(i);
+    				point.add(j);
+    				ans.add(point);
+    			}
+    		}
+    	}
+    	return ans;
+    }
+    
+    public void dfs (int[][] matrix, int[][] resultMatrix, int row, int column, int pre) {
+    	if (row >= 0 && row < matrix.length && column >= 0 && column < matrix[0].length 
+    			&& resultMatrix[row][column] == 0 && matrix[row][column] >= pre) {
+    		resultMatrix[row][column]=1;
+    		dfs (matrix, resultMatrix, row-1, column, matrix[row][column]);
+    		dfs (matrix, resultMatrix, row+1, column, matrix[row][column]);
+    		dfs (matrix, resultMatrix, row, column-1, matrix[row][column]);
+    		dfs (matrix, resultMatrix, row, column+1, matrix[row][column]);
+    	} 
+    }
+    
+    
     /*
      *                 Palindrome
      */	
@@ -2388,7 +2564,7 @@ public class Solutions {
     	}
     }
     
-    //Q200
+    //Q200     time:O(mn)   space: O(1)
     public int numIslands(char[][] grid) {
     	if (grid.length==0) {
     		return 0;
