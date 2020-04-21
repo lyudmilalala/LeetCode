@@ -2246,6 +2246,117 @@ public class Solutions {
 		return true;
     }
     
+    //Q547
+    
+    //DFS, similar to num of island
+    //time: O(n^2) (go over the whole matrix)   space: O(1)
+    public int findCircleNumDFS(int[][] M) {
+    	//M[i][j] = -1 represent that place has been visited, no need to check again
+    	if (M.length == 0) {
+    		return 0;
+    	}
+    	int count = 0;
+    	for (int i = 0; i<M.length; i++) {
+    		if (M[i][0] != -1) {
+    			dfs (M, i);
+        		count++;
+    		}
+    	}
+    	return count;
+    }
+    
+    public void dfs(int[][] M, int i) {
+    	for (int j = 0; j<M.length; j++) {
+    		if (i!=j && M[i][j]==1 && M[j][0] != -1) {
+    			dfs (M, j);
+    		}
+    		M[i][j] = -1; //set to visited
+    	}
+    }
+    
+    //Disjoint Set Union
+    //time: O(n^2) go over the matrix   space: O(n) for parent
+    
+    //find the root parent of index i, it represent the whole cluster
+    public int find(int[] parent, int i) {
+    	if (parent[i] == i)
+            return parent[i];
+    	// 路径压缩 Path Compression
+    	// not use return return parent[i]
+        return find(parent, parent[i]);
+    }
+    
+    //merge two node to the same parent because they are correlated
+    public void union(int[] parent, int i, int j) {
+    	int ip = find(parent, i);
+    	int jp = find(parent, j);
+    	if (ip != jp) {
+    		// 按秩合并 Union by Rank
+    		// choose to merge to the root with more children
+    		parent[jp] = ip;  
+    	}
+    }
+    
+    public int findCircleNumDSU(int[][] M) {
+    	if (M.length == 0) {
+    		return 0;
+    	}
+    	int[] parent = new int[M.length];
+    	for (int i=0; i< M.length; i++) {
+    		parent[i] = i;
+    	}
+    	for (int i=0; i< M.length; i++) {
+    		for (int j=0; j<M.length; j++) {
+    			if (i!=j && M[i][j]==1) {
+    				union(parent, i, j);
+    			}
+    		}
+    	}
+    	int count = 0;
+        for (int i = 0; i < parent.length; i++) {
+            if (parent[i] == i)
+                count++;
+        }
+        return count;
+    }
+    
+    //Q684    implement DSU in one function
+    //time: O(n) go over all edges   space: O(n) for parent
+    public int[] findRedundantConnection(int[][] edges) {
+    	//only one redundant edge, so number of nodes = edges.length
+    	int[] parent = new int[edges.length];
+    	for (int i = 0; i<edges.length; i++) {
+    		parent[i] = i;
+    	}
+        for (int i = 0; i<edges.length; i++) {
+        	// because the node start at 1, parent[i] represent the parent of node i+1
+        	// minus 1 for check and modification, plus 1 when return results
+    		int start = edges[i][0]-1;
+    		int end = edges[i][1]-1;
+    		// ---------------- equivalent to find() function --------------------
+    		// recursively get the root of the union of start
+    		int sroot = start;
+    		while (sroot!=parent[sroot]) {
+    			sroot = parent[sroot];
+    		}
+    		// recursively get the root of the union of end
+    		int eroot = end;
+    		while (eroot!=parent[eroot]) {
+    			eroot = parent[eroot];
+    		}
+    		// ---------------- equivalent to union() function --------------------
+    		if (sroot == eroot) {
+    			// is already in the same union, current edge is redundant
+    			int[] ans = {start+1, end+1};
+    			return ans;
+    		} else {
+    			// merge to the same union
+    			parent[eroot] = sroot;
+    		}
+    	}
+        return null;
+    }
+    
     //Q210     time: O(N)   space: O(N)
     public int[] findOrder(int numCourses, int[][] prerequisites) {
     	//indegrees[i]: how many node should be visited before visit i
