@@ -571,6 +571,45 @@ public class Solutions {
     	}
     	return num*sign;
     }
+
+    //Q14    time: O(s), s is the total number of characters in strs   space: O(1)
+    public String longestCommonPrefix(String[] strs) {
+        if (strs == null || strs.length == 0) return "";
+        for (int i = 0; i < strs[0].length() ; i++){
+            char c = strs[0].charAt(i);
+            for (int j = 1; j < strs.length; j ++) {
+                if (i == strs[j].length() || strs[j].charAt(i) != c)
+                    return strs[0].substring(0, i);             
+            }
+        }
+        return strs[0];
+    }
+    
+    //Q6     time: O(n)   space: O(n)
+    public String convert(String s, int numRows) {
+    	if (numRows == 1) {
+    		return s;
+    	}
+    	int groupSize = numRows*2-2;
+    	char[] c = s.toCharArray();
+    	StringBuilder[] sb = new StringBuilder[numRows];
+    	for (int i = 0; i<sb.length; i++) {
+    		sb[i] = new StringBuilder();
+    	}
+    	// can also use a int cur_row and a boolean godown to control the direction to go
+    	for (int i = 0; i < s.length(); i++) {
+    		int left = i % groupSize;
+    		if (left <= numRows-1) {
+    			sb[left].append(s.charAt(i));
+    		} else {
+    			sb[groupSize-left].append(s.charAt(i));
+    		}
+    	}
+    	for (int i = 1; i<sb.length; i++) {
+    		sb[0].append(sb[i].toString());
+    	}
+    	return sb[0].toString();
+    }
     
     //Q76
     public String minWindow(String s, String t) {
@@ -1492,8 +1531,10 @@ public class Solutions {
          return map.get(map.size()-1).containsKey(S) ? map.get(map.size()-1).get(S) : 0;
     }
     
-    //Q55
-    public boolean canJump(int[] nums) {
+    //Q55     
+    
+    //Top-down Dynamic Programming     time: O(n)   space: O(n)
+    public boolean canJumpDP(int[] nums) {
     	int[] ans = new int[nums.length];
     	ans[nums.length-1] = 1;
     	for (int i = nums.length-2; i>=0; i--) {
@@ -1504,20 +1545,22 @@ public class Solutions {
     			}
     		}
     	}
-    	return ans[0] == 1;
-    	
-//    	also solve by greedy algorithm
-//    	when the new node can approach the most left approachable node, set it as the new most left approachable node
-//    	int mostleft = nums.length-1;
-//    	for(int i=nums.length-2; i>=0; i--) {
-//    		if (i+nums[i]>=mostleft) {
-//    			mostleft = i;
-//    		}
-//    	}
-//    	return mostleft == 0;
-         
+    	return ans[0] == 1;     
     }
- 
+    
+    //Greedy algorithm
+    //When the new node can approach the most left approachable node, set it as the new most left approachable node
+    //time: O(n)   space: O(1)
+    public boolean canJumpGreedy(int[] nums) {
+    	int mostleft = nums.length-1;
+    	for(int i=nums.length-2; i>=0; i--) {
+    		if (i+nums[i]>=mostleft) {
+    			mostleft = i;
+    		}
+    	}
+    	return mostleft == 0;
+    }
+    
     //Q121     time: O(n)   space: O(n) 
     public int maxProfit1(int[] prices) {
     	if (prices.length==0) {
@@ -2276,7 +2319,7 @@ public class Solutions {
     
     //Disjoint Set Union
     //time: O(n^2) go over the matrix   space: O(n) for parent
-    
+  
     //find the root parent of index i, it represent the whole cluster
     public int find(int[] parent, int i) {
     	if (parent[i] == i)
