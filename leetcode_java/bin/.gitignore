@@ -7,3 +7,8 @@
 /Solutions$Node.class
 /Solutions$TreeNode.class
 /Solutions.class
+/LRUCache.class
+/LRUCache$DoublyLinkedListNode.class
+/LFUCache.class
+/LFUCache$DoublyLinkedListNode.class
+/LFUCache$DoublyLinkedList.class

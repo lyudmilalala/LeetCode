@@ -8,7 +8,7 @@ import (
  *    String
  */
 
-// Q14    
+// Q14-
 //time: O(s), s is the total number of characters in strs   space: O(1)
 func longestCommonPrefix(strs []string) string {
 	if len(strs) == 0 || len(strs[0]) == 0 {
@@ -47,7 +47,7 @@ func convert(s string, numRows int) string {
 		} else {
 			cur_row--
 		}
-	} 
+	}
 	ans := string(strs[0])
 	for j := 1; j < len(strs); j++ {
 		ans += string(strs[j])
@@ -69,6 +69,7 @@ func twoSum(nums []int, target int) []int {
 	}
 	return []int{-1,-1}
 }
+
 
 /*
  *    LinkedList
@@ -113,10 +114,11 @@ func canJumpDP(nums []int) bool {
 				canApproach[i] = 1
 				break
 			}
-		} 
+		}
 	}
 	return canApproach[0] == 1
 }
+
 
 //Greedy algorithm
 //When the new node can approach the most left approachable node, set it as the new most left approachable node
@@ -129,6 +131,54 @@ func canJumpGreedy(nums []int) bool {
 		}
 	}
 	return mostleft == 0
+}
+
+//Q45
+// Greedy -- always find the range can approach for the next step
+// time: O(n)   space: O(1)
+func jump(nums []int) int {
+    if len(nums)==1 {
+      return 0;
+    }
+    start,end,count := 0,1,0
+		//end = the farthest index can approach
+    nextend := end
+		//if end >= len(nums), the end of the array can already be approached
+    for end<len(nums)-1 {
+      for i := start; i<=end; i++ {
+        if (i+nums[i] > nextend) {
+          nextend = i+nums[i]
+        }
+      }
+			//start from the next index of the current end
+      start = end+1
+      end = nextend
+      count++
+    }
+    return count
+}
+
+/*
+ *    Main
+ */
+
+func contains(array []int, val int) bool {
+	contains := false
+	for _, value := range array {
+		if val == value {
+			contains = true
+			break
+		}
+	}
+	return contains
+}
+
+func containsKey(myMap map[int]int, key int) bool {
+	if _, ok := myMap[key]; ok {
+		return true
+	} else {
+		return false
+	}
 }
 
 func main() {

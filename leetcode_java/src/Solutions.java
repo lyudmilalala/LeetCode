@@ -1,11 +1,18 @@
 import java.util.*;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 public class Solutions {
 
 	public Solutions() {
 		// TODO Auto-generated constructor stub
 	}
 
+	//Q292
+	public boolean canWinNim(int n) {
+        return n % 4 != 0;
+    }
+	
 	/*
 	 *                        Array 
 	 */	
@@ -53,6 +60,7 @@ public class Solutions {
 			curr--;
 		}
 	}
+	
 	//Q621     time: O(n)  space: O(1)
 	//Greedy -- always first calculate the tasks with most number
 	 public int leastInterval(char[] tasks, int n) {
@@ -101,6 +109,44 @@ public class Solutions {
         
     }
 	
+    //Q33     time: O(logn)   space: O(1)
+    public int search(int[] nums, int target) {
+    	if (nums.length == 0) {
+    		return -1;
+    	} else if (nums.length == 1) {
+    		return nums[0] == target? 0 : -1;
+    	}
+    	int left = 0;
+    	int right = nums.length-1;
+    	int mid = 0;
+    	while (left<=right) {
+    		mid = (right+left)/2; //excluded from left
+    		if (nums[mid] == target) {
+    			return mid;
+    		}
+    		if (nums[left] <= nums[mid]) {
+    			// left part is sorted
+    			if (target>=nums[left] && target<nums[mid]) {
+    				// in this sorted part
+    				right = mid-1;
+    			} else {
+    				//not in this sorted part
+    				left = mid+1;
+    			}
+    		} else {
+    			// right part is sorted
+    			if (target>nums[mid] && target<=nums[right]) {
+    				// in this sorted part
+    				left = mid+1;
+    			} else {
+    				//not in this sorted part
+    				right = mid-1;
+    			}
+    		}
+    	}
+    	return -1;
+    }
+    
     //Q56     time: O(nlogn)  space: without considering result space
     public int[][] merge(int[][] intervals) {
         Arrays.sort(intervals, (int[] a, int[] b) -> a[0] - b[0]);
@@ -282,6 +328,80 @@ public class Solutions {
         return digits;
     }
 
+    //Q1202
+    //Disjoint Set Union
+    //time:   
+    //space: an extra parent array + an extra HashMap contains all characters = O(2n) = O(n)
+    public String smallestStringWithSwaps(String s, List<List<Integer>> pairs) {
+    	if (s.length()<=1) {
+    		return s;
+    	}
+    	
+    	// initialize
+    	char[] arr = s.toCharArray();
+    	int[] parent = new int[arr.length];
+    	for (int i = 0; i<parent.length; i++) {
+    		parent[i] = i;
+    	}
+    	
+    	// correlate the characters that can be switched with each other
+    	for (List<Integer> p : pairs) {
+    		int start = p.get(0);
+    		while (parent[start] != start) {
+    			start = parent[start];
+    		}
+    		int end = p.get(1);
+    		while (parent[end] != end) {
+    			end = parent[end];
+    		}
+    		parent[end] = start;
+    	}
+    	
+    	// group the characters that can be switched with each other in a union
+    	HashMap <Integer, List<Character>> charUnion = new HashMap<>();
+    	for (int i = 0; i < parent.length; i++) {
+    		// find the root parent recursively
+    		int root = parent[i];
+    		while (parent[root] != root) {
+    			root = parent[root];
+    		}
+    		parent[i] = root;
+    		if (!charUnion.containsKey(root)) {
+    			charUnion.put(root, new LinkedList<Character>());
+    		}
+    		charUnion.get(root).add(arr[i]);
+    	}
+    	System.out.print("Parent array: ");
+    	for (int j = 0; j<parent.length; j++) {
+    		System.out.print(parent[j] + ", ");
+    	}
+    	System.out.println();
+    	
+    	// sort each union
+    	for (int k : charUnion.keySet()) {
+    		System.out.println("HashMap with key = " + k);
+    		List<Character> characters = charUnion.get(k);	
+    		Collections.sort(characters);
+//    		System.out.print("Sorted Characters: ");
+//        	for (int j = 0; j<characters.size(); j++) {
+//        		System.out.print(characters.get(j) + ", ");
+//        	}
+//        	System.out.println();
+    	}
+    	
+    	// go through the string to put correct characters on each position
+    	// pop characters in the same union from frontend
+    	for (int i = 0; i<parent.length; i++) {
+    		int groupKey = parent[i];
+    		List<Character> group = charUnion.get(groupKey);
+    		arr[i] = group.get(0);
+    		group.remove(0);
+    	}
+    	
+    	System.out.println(new String(arr));
+    	return new String(arr);
+    }
+    
     //Q4
     public double findMedianSortedArrays(int[] nums1, int[] nums2) {
     	if (nums1.length == 0 && nums2.length == 0) {
@@ -585,6 +705,52 @@ public class Solutions {
         return strs[0];
     }
     
+    //Q344     time: O(n/2) = O(n)   space: O(1)
+    public void reverseString(char[] s) {
+    	for (int i = 0; i < s.length/2; i++) {
+    		char tmp = s[i];
+    		s[i] = s[s.length-1-i];
+    		s[s.length-1-i] = tmp;
+    	}
+    }
+    
+    //Q541     time: O(n/4) = O(n)   space: O(n) for char array
+    public String reverseStr(String s, int k) {
+    	char[] arr = s.toCharArray();
+    	boolean isOdd = true;
+    	for (int i = 0; i < s.length(); i+=k) {
+    		if (isOdd) {
+    			int start = i;
+    			int end = Math.min(i+k, s.length());
+    			for (int j = start; j < (start+end)/2; j++) {
+    	    		char tmp = arr[j];
+    	    		arr[j] = arr[end-1-(j-i)];
+    	    		arr[end-1-(j-i)] = tmp;
+    	    	}
+    		}
+    		isOdd = !isOdd;
+    	}
+    	return new String(arr);
+    }
+    
+    //Q557     time: O(n/2) = O(n)   space: O(2n) for char array and StringBuilder
+    public String reverseWords(String s) {
+    	String[] strs = s.split(" ");
+    	StringBuilder sb = new StringBuilder();
+    	for (String cur : strs) {
+    		char[] arr = cur.toCharArray();
+    		for (int i = 0; i < arr.length/2; i++) {
+        		char tmp = arr[i];
+        		arr[i] = arr[arr.length-1-i];
+        		arr[arr.length-1-i] = tmp;
+        	}
+    		sb.append(arr);
+    		sb.append(" ");
+    	}
+    	sb.deleteCharAt(sb.length()-1);
+    	return sb.toString();
+    }
+    
     //Q6     time: O(n)   space: O(n)
     public String convert(String s, int numRows) {
     	if (numRows == 1) {
@@ -707,7 +873,7 @@ public class Solutions {
 	class ListNode {
 		int val;
 		ListNode next;
-		ListNode(int x) { val = x; }
+		ListNode(int x) { val = x;  next=null;}
 	}
 	
 	//Q21 O(N) for N as the total number of nodes in two lists
@@ -834,21 +1000,69 @@ public class Solutions {
         return null;
     }
     
-	//Q24
+    //Q206     time: O(n)   space: O(1)
+    public ListNode reverseList(ListNode head) {
+    	ListNode pre = null; // the already reversed part
+    	ListNode cur = head;
+    	while (cur!=null) {
+    		ListNode next = cur.next;
+    		cur.next = pre; // set the already reversed part (nodes in front of the current node) to the end of the current node
+    		pre = cur; // add the current node to the already reversed part
+    		cur = next; // move to check next
+    	}
+    	return pre;
+    }
+    
+	//Q24     time: O(n)   space: O(1)
     public ListNode swapPairs(ListNode head) {
         ListNode dummy = new ListNode(-1);
     	dummy.next = head;
         ListNode pre = dummy;
         ListNode cur = head;
         while(cur!=null && cur.next!=null) {
-            ListNode next = cur.next;
-        	cur.next = next.next;
-            pre.next = next;
-        	next.next = cur;
-        	pre = cur;
-        	cur = cur.next;
+            ListNode next = cur.next; 
+        	cur.next = next.next; // switch to end of the current from next to next next
+            pre.next = next; // append the next node after the previous node
+        	next.next = cur; // append the current node after the next node (switch their position)
+        	pre = cur; // move two steps forward, continue check from next next
+        	cur = cur.next; 
         }
         return dummy.next;
+    }
+    
+    //Q61     time: O(2n)=O(n)   space: O(1)
+    // can also close the old LinkedList to a circle and then reopen it at the correct place l - k % l - 1
+    public ListNode rotateRight(ListNode head, int k) {
+    	if (head == null || head.next == null || k == 0) {
+    		return head;
+    	}
+    	ListNode fast = head;
+    	int size = 0;
+    	while (fast.next != null && size < k) {
+    		fast = fast.next;
+    		size++;
+    	}
+    	if (size < k) {
+    		size = size+1; // real LinkedList length
+        	k = k % size;
+    	}
+    	if (k == 0) {
+    		return head;
+    	}
+    	fast = head;
+    	ListNode slow = head;
+    	int i = 0;
+    	while (fast.next != null) {
+    		if (i >= k) {
+    			slow = slow.next;
+    		}
+    		fast = fast.next;
+    		i++;
+    	}
+    	ListNode ans = slow.next;
+    	slow.next = fast.next;
+    	fast.next = head;
+    	return ans;
     }
     
     //Q160
@@ -957,19 +1171,23 @@ public class Solutions {
         }           
     }
     
-    private ListNode createSampleLinkedList() {
-    	ListNode head = new ListNode(-1);
-    	head.next = new ListNode(5);
-    	head.next.next = new ListNode(3);
-    	head.next.next.next = new ListNode(4);
-    	head.next.next.next.next = new ListNode(0);
-    	return head;
+    private ListNode createSampleLinkedList(int[] arr) {
+    	ListNode dummy = new ListNode(-1);
+    	ListNode cur = dummy;
+    	for (int i=0; i<arr.length; i++) {
+    		cur.next =  new ListNode(arr[i]);
+    		cur = cur.next;
+    	}
+    	return dummy.next;
     }
     
-    //Q148 legitimate solution time complexity O(nlogn), space complexity O(1)
-    public ListNode sortList(ListNode head) {
-    	if (head == null) {
-    		return null;
+    //Q148 
+    
+    //iterative solution -- sort small groups and then merge them together
+    //time: O(nlogn), space: O(1)
+    public ListNode sortListItr(ListNode head) {
+    	if (head == null || head.next == null) {
+    		 return head;
     	}
     	//create dummy head
     	ListNode dummy = new ListNode(-1000);
@@ -982,103 +1200,136 @@ public class Solutions {
     		cur = cur.next;
     	}
     	System.out.println("size = " + size);
-//    	print(dummy);
+    	
     	//start with merge two item into a sorted sublist, then increase the size of sorted sublist
-    	for(int step_length=2; step_length<size; step_length*=2) {
-    		print(dummy);
+    	for(int step_length=1; step_length<size; step_length*=2) {
+    		System.out.println("step_length = " + step_length);
     		ListNode pre = dummy;
+    		// cur: start of the next two sublists that need to merge
     		cur = dummy.next;
-    		ListNode next_start = null;
-    		while(cur!=null) {
-    			ListNode start = cur;
-    			ListNode half = cur;
-    			int k = 0;
-    			// refresh start point of the second sublist
-    			k = 0;
-    			while(k<step_length/2 && half!=null) {
-    				half = half.next;
-    				k++;
+    		while (cur != null) {
+//    			print(dummy.next);
+    			ListNode h1 = cur;
+    			int l1 = step_length;
+    			// get the next header
+    			ListNode h2 = cur;
+    			while (h2!=null && l1>0) {
+    				h2 = h2.next;
+    				l1--;
     			}
-    			// get the new end point (next current)
-    			if (half!=null) {
-    				next_start = half;
-    				k = 0;
-        			while(k<step_length/2 && next_start!=null) {
-        				next_start = next_start.next;
-        				k++;
-        			}
+    			// h1 does not have enough nodes, no need to merge
+    			if (l1 > 0) {
+    				System.out.println("No enough nodes for sublist 1, thus no sublist 2, break");
+    				break;
     			}
-    			// merge two sublist
-    			int pointer1 = 0;
-    			int pointer2 = 0;
-    			while ((start!=null || half!=null) && (pointer1<step_length/2 || pointer2<step_length/2)) {
-    				if (start!=null && half!=null && pointer1<step_length/2 && pointer2<step_length/2) {
-    					if (start.val<=half.val) {
-    						ListNode temp = start.next;
-    						pre.next = start;
-    						start = temp;
-    						pointer1++;
-    					}else {
-    						ListNode temp = half.next;
-    						pre.next = half;
-    						half = temp;
-    						pointer2++;
-    					}
-    				}else if(half==null || pointer2>=step_length/2) {
-    					pre.next = start;
-						start = start.next;
-						pointer1++;
-    				} else if(start==null || pointer1>=step_length/2) {
-    					pre.next = half;
-						half = half.next;
-						pointer2++;
+    			int l2 = step_length;
+    			// get the start of next group / end of this group
+    			ListNode nextStart = h2;
+    			while (nextStart!=null && l2>0) {
+    				nextStart = nextStart.next;
+    				l2--;
+    			}
+    			if (l2 == step_length) {
+    				System.out.println("No nodes in sublist 2, thus no sublist 2, break");
+    				break;
+    			}
+    			l1 = step_length;
+    			l2 = step_length-l2;
+    			
+    			// merge two sublists
+    			while (l1 > 0 || l2 > 0) {
+//    				exceed time limit if printout
+//    				String s = "";
+//    				if (h1!=null) {
+//    					s += "h1 = " + h1.val + ", ";
+//    				} else {
+//    					s += "h1 = null, ";
+//    				}
+//    				if (h2!=null) {
+//    					s += "h2 = " + h2.val + ", ";
+//    				} else {
+//    					s += "h2 = null, ";
+//    				}
+//    				if (nextStart!=null) {
+//    					s += "nextStart = " + nextStart.val;
+//    				} else {
+//    					s += "nextStart = null";
+//    				}
+//    				System.out.println(s);
+//        			System.out.println("length of subList 1 = "+ l1 + ", length of subList 2 = "+ l2);
+//    				System.out.println("pre = "+pre.val);
+    				if (l2 == 0 && l1 > 0) {
+    					// only sublist 1 has left over nodes
+    					pre.next = h1;
+    					h1 = h1.next;
+    					l1--;
+    				} else if (l1 == 0 && l2 > 0) {
+    					// only sublist 2 has left over nodes
+    					pre.next = h2;
+    					h2 = h2.next;
+    					l2--;
+    				} else {
+    					// compare nodes of sublist 1 and 2
+    					if (h1.val < h2.val) {
+        					pre.next = h1;
+        					h1 = h1.next;
+        					l1--;
+        				} else {
+        					pre.next = h2;
+        					h2 = h2.next;
+        					l2--;
+        				}
     				}
     				pre = pre.next;
     			}
-    			pre.next = next_start;
-    			cur = next_start;
+    			pre.next = nextStart;
+    			cur = pre.next;
     		}
-    		
     	}
-    	
     	return dummy.next;
     }
     
-    
-    
-    //Q148 QuickSort time complexity O(nlogn), but close to O(n^2) for the sample data
-//    public ListNode sortList(ListNode head) {
-//    	if (head == null) {
-//    		return null;
-//    	}
-//    	ListNode dummy = new ListNode(-1000);
-//    	dummy.next = head;
-//    	partition(head, dummy, null);
-//    	return dummy.next;
-//    }
+    //recursive solution
+    //time: O(nlogn), 
+    //space: O(n) for normal list / O(1) for LinkedList as we only need to change their references + O(logn) for storing recursive function result
+    public ListNode sortListRecur(ListNode head) {
+        if (head == null || head.next == null) {
+        	return head;
+        }
+        // fast need to be initialized as head.next
+        // so that when size of the sublist is 2, slow will keep at index = 0
+        // thus the sublist can be splited into 1 and 1
+        ListNode fast = head.next;
+        ListNode slow = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        // if length is even, mid = start of the right half
+        // if length is odd, mid = medium + 1 (right half smaller)
+        // sort the two half recursively
+        ListNode mid = slow.next;
+        slow.next = null;
+        ListNode left = sortListRecur(head);
+        ListNode right = sortListRecur(mid);
+        
+        ListNode dummy = new ListNode(-1000);
+        ListNode pre = dummy;
+        while (left != null && right != null) {
+            if (left.val < right.val) {
+                pre.next = left;
+                left = left.next;
+            } else {
+                pre.next = right;
+                right = right.next;
+            }
+            pre = pre.next;
+        }
+        // if one half has already been finished, we can append the left of the next half directly
+        pre.next = left != null ? left : right;
+        return dummy.next;
+    }
 
-//    private void partition(ListNode pivot, ListNode pre, ListNode next) {
-//    	ListNode cur = pivot;
-//    	while(cur.next!=next) {
-//    		ListNode temp = cur.next;
-//    		cur = cur.next;
-//    		if (cur.next.val<=pivot.val) {
-//    			cur.next = cur.next.next;
-//    			temp.next = pre.next;
-//    			pre.next = temp;
-//    		}
-//    	}
-//    	if (pre.next!=pivot) {
-//    		partition(pre.next, pre, pivot);
-//    	}
-//    	while(pivot.next!=null && pivot.val == pivot.next.val) {
-//    		pivot = pivot.next;
-//    	}
-//    	if(pivot.next!=next) {
-//    		partition(pivot.next,pivot,next);
-//    	}
-//    }
-    
     //Q347
     public List<Integer> topKFrequent(int[] nums, int k) {
     	
@@ -1561,6 +1812,127 @@ public class Solutions {
     	return mostleft == 0;
     }
     
+    //Q45
+    
+    //Top-down Dynamic Programming     time: O(n)   space: O(n)
+    public int jumpDP(int[] nums) {
+    	int[] count = new int[nums.length];
+    	for (int i = nums.length-2; i>=0; i--) {
+    		int min = count[i+1];
+    		for (int j = i+2; j<=Math.min(i+nums[i], nums.length-1); j++) {
+    			min = Math.min(min, count[j]);
+    		}
+    		count[i] = min+1;
+    	}
+    	return count[0] == 0? 0 : count[0];
+    }
+    
+    // Greedy -- always find the range can approach for the next step
+    // time: O(n)   space: O(1)
+    public int jumpGreedy(int[] nums) {
+    	int start = 0, end = 0, count = 0;
+    	//end = the farthest index can approach
+    	int nextend = end;
+    	//if end >= nums.length-1, the end of the array can already be approached
+    	while (end<nums.length-1) {
+    		for (int i = start; i <=end; i++) {
+    			nextend = Math.max(i+nums[i], nextend);
+    		}
+    		//start from the next index of the current end
+    		start = end+1;
+    		end = nextend;
+    		count++;
+    	}
+    	return count;
+    }
+    
+    //Q1306     DFS   time: O(n) for at most go over the whole list   space: O(n)
+    //can also do BFS
+    public boolean canReach(int[] arr, int start) {
+    	int[] visited = new int[arr.length];
+    	return dfs(arr, visited, start);
+    }
+    
+    public boolean dfs(int[] arr, int[] visited, int i) {
+    	if (visited[i] == 1) {
+    		return false;
+    	}else if (arr[i] == 0) {
+    		visited[i] = 1;
+    		return true;
+    	}else {
+    		visited[i] = 1;
+    		// cannot go to place < 0 or > length-1
+    		boolean left = i-arr[i]>=0 && dfs(arr, visited, i-arr[i]);
+    		boolean right = i+arr[i]<arr.length && dfs(arr, visited, i+arr[i]);
+    		return left || right;
+    	}
+    }
+    
+    //Q1345   BFS, DFS will exceed time limited
+    public int minJumps(int[] arr) {
+    	if (arr.length==1) {
+    		return 0;
+    	}
+    	// build a Map to store the indexs of all same values
+    	// Ignore those i that arr[i-1]==arr[i]==arr[i+1] 
+    	// because it cannot go anywhere different from its left and its right
+    	// Otherwise, exceed time limit
+    	Map<Integer, List<Integer>> map = new HashMap<>();
+    	for (int i=0 ; i<arr.length; i++) {
+    		if (i>0 && i<arr.length-1 && arr[i] == arr[i-1] && arr[i] == arr[i+1]) {
+    			continue;
+    		}
+    		if (map.containsKey(arr[i])) {
+    			map.get(arr[i]).add(i);
+    		} else {
+    			map.put(arr[i], new ArrayList<Integer>());
+    			map.get(arr[i]).add(i);
+    		}
+    	}
+    	// initialize the step needs to get to all node except the start to INFINITY_MAX
+    	int[] count = new int[arr.length];
+    	for (int i=1; i<count.length; i++) {
+    		count[i] = Integer.MAX_VALUE;
+    	}
+    	Queue<Integer> queue = new ArrayDeque<>();
+    	queue.add(0);
+    	while (!queue.isEmpty()) {
+    		int cur = queue.poll();
+    		//move to left
+    		if (cur-1>=0 && count[cur-1] == Integer.MAX_VALUE) {
+    			count[cur-1] = count[cur]+1;
+    			queue.add(cur-1);
+    		}
+    		//move to right
+    		if(cur+1<arr.length && count[cur+1] == Integer.MAX_VALUE) {
+    			count[cur+1] = count[cur]+1;
+    			queue.add(cur+1);
+    			if (cur+1 == arr.length-1) {
+    				break;
+    			}
+    		}
+    		//move to same value
+    		if (map.containsKey(arr[cur])) {
+    			boolean broIsEnd = false;
+    			List<Integer> brothers = map.get(arr[cur]);
+    			for (int b : brothers) {
+    				if (count[b] == Integer.MAX_VALUE) {
+    					count[b] = count[cur]+1;
+    					queue.add(b);
+    					if (b == arr.length-1) {
+    						broIsEnd = true;
+    	    				break;
+    	    			}
+    				}
+    			}
+    			if (broIsEnd) {
+    				break;
+    			}
+    		}	
+    	}
+    	return count[count.length-1];
+    }
+    
     //Q121     time: O(n)   space: O(n) 
     public int maxProfit1(int[] prices) {
     	if (prices.length==0) {
@@ -1568,15 +1940,17 @@ public class Solutions {
     	}
         int min = prices[0];
         prices[0] = 0;
-        for (int i=1; i<prices.length; i++) {
-        	if (prices[i]<=min) {
-        		min = prices[i];
-        	} 
+        for (int i=1; i<prices.length; i++) {  	
+        	int cur = prices[i];
         	prices[i] = Math.max(prices[i-1], prices[i]-min);
+        	if (cur<min) {
+        		min = cur;
+        	} 
         }
         return prices[prices.length-1];
     }
-
+    
+    
     //Q122
     //Greedy algorithm, only count when today's price is higher than yesterday
     //time: O(n), space: O(1)
@@ -2157,7 +2531,7 @@ public class Solutions {
   	  }
     }
     
-    //Q15
+    //Q15     time: O(nlogn) + O(n^2) = O(n^2)   space: O(1)
     public List<List<Integer>> threeSum(int[] nums) {
     	List<List<Integer>> ans = new LinkedList<>();
     	Arrays.parallelSort(nums);
@@ -2184,6 +2558,38 @@ public class Solutions {
     		}
     		// update after first hit because may miss duplication of numbers
     		while (i<nums.length-2 && nums[i] == nums[i+1]) {
+				i++;
+			}
+    	}
+    	return ans;
+    }
+    
+    //Q16     time: O(nlogn) + O(n^2) = O(n^2)   space: O(1)
+    public int threeSumClosest(int[] nums, int target) {
+    	int ans = 0;
+    	int diff = Integer.MAX_VALUE;
+    	Arrays.parallelSort(nums);
+    	for (int i = 0; i<nums.length-2; i++) {
+    		int low = i+1;
+    		int high =nums.length-1;
+    		while (low < high) {
+    			int sum = nums[i] + nums[low] + nums[high];
+    			if (Math.abs(sum-target) < diff) {
+    				diff = Math.abs(sum-target);
+    				ans = sum;
+    			}
+    			if (sum > target) {
+    				high--;
+    			}else if (sum < target) {
+    				low++;
+    			}else {
+    				break;
+    			}
+    		}
+    		if (diff == 0) {
+    			break;
+    		}
+    		while (i < nums.length-2 && nums[i] == nums[i+1]) {
 				i++;
 			}
     	}
@@ -2857,12 +3263,15 @@ public class Solutions {
     private void print(ListNode head) {
     	ListNode cur = head;
     	StringBuilder sb = new StringBuilder();
-    	while(cur!=null) {
+    	sb.append("Current LinkedList: ");
+    	int i = 0;
+    	while(cur != null && i < 10) {
     		sb.append(cur.val);
-    		sb.append(" -> ");
+    		sb.append("->");
     		cur = cur.next;
+    		i++;
     	}
-    	sb.delete(sb.length()-4, sb.length()-1);
+    	sb.delete(sb.length()-2, sb.length());
     	System.out.println(sb.toString());
     }
     
@@ -2923,8 +3332,39 @@ public class Solutions {
 //		ListNode a = s.sortList(n);
 //		System.out.println( s.sortList(n)==null);
 //		s.print(a);
-		System.out.println(s.uniquePaths(51, 9));
+//		System.out.println(s.uniquePaths(51, 9));
+//		int[] nums = new int[]{2,3,1,1,4};
+//		System.out.println(s.jump(nums));
+//		int[] nums = new int[]{11,22,7,7,7,7,7,7,7,22,13};
+//		System.out.println(s.minJumps(nums));
 		
+//		ArrayList<Integer> arr1 = new ArrayList<>();
+//		arr1.add(0);
+//		arr1.add(3);
+//		ArrayList<Integer> arr2 = new ArrayList<>();
+//		arr2.add(1);
+//		arr2.add(2);
+//		ArrayList<Integer> arr3 = new ArrayList<>();
+//		arr3.add(0);
+//		arr3.add(2);
+//		ArrayList<Integer> arr4 = new ArrayList<>();
+//		arr4.add(4);
+//		arr4.add(6);
+//		ArrayList<List<Integer>> pairs = new ArrayList<>();
+//		pairs.add(arr1);
+//		pairs.add(arr2);
+//		pairs.add(arr3);
+//		pairs.add(arr4);		
+//		s.smallestStringWithSwaps("dcabfge", pairs);	
+		
+//		int[] nums = new int[]{1,2,3,4,5};
+//		int[] nums = new int[]{4,2};
+//		ListNode head = s.createSampleLinkedList(nums);
+//		s.print(head);
+//		ListNode ans = s.sortListItr(head);
+//		s.print(ans);
+		
+		System.out.println(s.reverseStr("abcdefghijklmnopqrs", 4));
 	}
 
 }
