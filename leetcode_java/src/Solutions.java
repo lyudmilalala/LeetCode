@@ -63,7 +63,7 @@ public class Solutions {
 	
 	//Q621     time: O(n)  space: O(1)
 	//Greedy -- always first calculate the tasks with most number
-	 public int leastInterval(char[] tasks, int n) {
+	public int leastInterval(char[] tasks, int n) {
 		 int maxOccur = 0; // the most amount of times a task occur
 		 int maxOccurCount = 0; // how many characters are with the max occurence
 		 int[] occurs = new int[26];
@@ -81,7 +81,7 @@ public class Solutions {
 		 // extra tasks leave after filling empty slots can be inserted into anywhere as we satisfied the minimum cool down interval
 		 int idles = Math.max(0, emptyslots - (tasks.length - maxOccur*maxOccurCount));
 		 return tasks.length+idles;
-	 }
+	}
 	 
 	//Q48     time: O(n^2)  space: O(1)
     public void rotate(int[][] matrix) {
@@ -145,6 +145,53 @@ public class Solutions {
     		}
     	}
     	return -1;
+    }
+    
+    //Q169 Find the mode which occupies at least n/2 of the array
+    
+    //By HashMap -- store the count of each number in a HashMap and track the max count
+    //time: O(n)   space: O(n)
+    
+    //By sorting     time: O(nlogn)   space: O(1)
+    //If a number occupies at least n/2 of a SORTED array, it must appears at the mid
+    // when the mode is the smallest number in array
+    //      ---------------
+    //        0, 1, 2, 3, 4, 5, 6, 7, 8      array.length is odd
+    //                    ---------------
+    //                       when the mode is the largest number in array
+    //
+    // when the mode is the smallest number in array
+    //      ----------------
+    //        0, 1, 2, 3, 4, 5, 6, 7      array.length is even
+    //                ----------------
+    //                       when the mode is the largest number in array
+    public int majorityElementBySort(int[] nums) {
+    	Arrays.parallelSort(nums);
+    	return nums[nums.length/2];
+    }
+    
+    //By Boyer-Moore     time: O(n)   space: O(1)
+    // 1. choose the first item in array as the candidate of the mode
+    // 2. use count to store the score of this candidate
+    // 3. scan over the array, for each item i:
+    //      * If count == 0, candidate = i (reset the candidate)
+    //      * If i == candidate, count++
+    //      * If i != candidate, count--
+    // 4. the final candidate will be the mode
+    public int majorityElement(int[] nums) {
+    	int count = 0;
+        int candidate = nums[0];
+        for (int num : nums) {
+            if (count == 0) {
+                candidate = num;
+            }
+            if (num == candidate) {
+            	count++;
+            } else {
+            	count--;
+            }
+        }
+        return candidate;
     }
     
     //Q56     time: O(nlogn)  space: without considering result space
@@ -876,6 +923,14 @@ public class Solutions {
 		ListNode(int x) { val = x;  next=null;}
 	}
 	
+	//Q237 delete the given node in a singly LinkedList (You are not allowed to visit the nodes before it)
+	//switch the value of this node and its next, then remove the link to next
+	//time: O(1)   space: O(1)
+	public void deleteNode(ListNode node) {
+		node.val = node.next.val;
+	    node.next = node.next.next;
+    }
+
 	//Q21 O(N) for N as the total number of nodes in two lists
     public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
     	if (l1 == null && l2 == null) {
@@ -2290,8 +2345,78 @@ public class Solutions {
     	TreeNode left;
     	TreeNode right;
     	TreeNode(int x) { val = x; }
+    	
+    	public String toString() {
+    		return "TreeNode (val: "+val+", left: "+left+", right: "+right+")";
+    	}
     }
     
+    //Q235     N -- numnber of tree nodes  
+    //BFS iteratively using Queue     time: O(N)   space: O(N)
+    //recursively choose the correct path     time: O(N)   space: O(N)  -- this solution
+    public TreeNode lowestCommonAncestorBinarySearchTree(TreeNode root, TreeNode p, TreeNode q) {
+    	TreeNode cur = root;
+    	if (cur.val == p.val || cur.val == q.val) {
+    		// one of p and q is the current
+    		return cur;
+    	} else if (cur.val > p.val && cur.val > q.val) {
+    		// both smaller than the current value
+    		return lowestCommonAncestor(cur.left, p, q);
+    	} else if (cur.val < p.val && cur.val < q.val) {
+    		// both larger than the cur value
+    		return lowestCommonAncestor(cur.right, p, q);
+    	} else {
+    		// one is one the left of the current node and one is on the right
+    		// lowest parent can only be cur
+    		return cur;
+    	}
+    }
+
+    //Q236     N -- numnber of tree nodes  
+    
+    //Can be solve by set two booleans
+    //vleft -- at least one of p and q is in the left subtree
+    //vright -- at least one of p and q is in the right subtree
+    //DFS and calculate  (vleft && vright) || ((cur.val==p || cur.val==q) && (vleft || vright))  for each node
+    //  p and q are in different   <---|          |---->   one of p and q is the current node
+    // subtrees of the current node                        and the other one is in the subtree
+    //the first node be true is the lowest ancestor
+    
+    //Use a HashMap to record all ancestors     time: O(N)   space: O(3N) = O(N)
+  	public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+  		HashMap<Integer, TreeNode> parent = new HashMap<>();
+  		HashSet<Integer> pancestor = new HashSet<>();
+  		Queue<TreeNode> queue = new LinkedList<>();
+  		//go through the tree iteratively to map all nodes their children
+  		parent.put(root.val, null);
+  		queue.add(root);
+  		while(!queue.isEmpty()) {
+  			TreeNode cur = queue.poll();
+  			if (cur.left !=null) {
+  				parent.put(cur.left.val, cur);
+  				queue.add(cur.left);
+  			}
+  			if (cur.right !=null) {
+  				parent.put(cur.right.val, cur);
+  				queue.add(cur.right);
+  			}
+  		}
+  		//save all ancestors of p in the HashSet
+  		while(p!=null) {
+  			pancestor.add(p.val);
+  			p = parent.get(p.val);
+  		}
+  		//check for an ancestor of q that is in the HashSet and return it
+  		while(q!=null) {
+  			if (pancestor.contains(q.val)) {
+  				return q;
+  			} else {
+  				q = parent.get(q.val);
+  			}
+  		}
+        return null;
+    }
+  	
     //Q617
     public TreeNode mergeTrees(TreeNode t1, TreeNode t2) {
         if (t1 == null && t2 == null) {
