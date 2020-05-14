@@ -1385,9 +1385,88 @@ public class Solutions {
         return dummy.next;
     }
 
+    //Q215
+    //time: O(NlogN)   space: O(N)
+    public int findKthLargestMaxHeap(int[] nums, int k) {
+    	//large number first
+    	PriorityQueue<Integer> maxHeap = new PriorityQueue<Integer>((n1, n2) -> -1*(n1 - n2));
+    	for(int i: nums) {
+    		maxHeap.add(i);
+    	}
+    	while(k>1) {
+    		maxHeap.poll();
+    		k--;
+    	}
+    	return maxHeap.poll();
+    }
+    
+    //time: O(NlogK)   space: O(K)
+    public int findKthLargestMinHeap(int[] nums, int k) {
+    	//small number first
+    	PriorityQueue<Integer> minHeap = new PriorityQueue<Integer>();
+    	for(int i: nums) {
+    		minHeap.add(i);
+    		if (minHeap.size()>k) {
+    			minHeap.poll();
+    		}
+    	}
+    	return minHeap.poll();
+    }
+    
+    //time: O(N), worst case O(N^2)   space: O(1)
+    public int findKthLargestByQuickSelect(int[] nums, int k) {
+    	return quickselect(nums, 0, nums.length-1, k);
+    }
+    
+    public int quickselect(int nums[], int left, int right, int k_largest) {
+    	if (left == right) {
+    		//only one number
+    		return nums[left];
+    	}
+    	//choose the right end as the pivot
+    	//in this case, actually not need the pivot_index parameter, keep it to make the function formal
+    	//pivot_index is useful when we randomly select the pivot
+    	int pivot = partition(nums, left, right, right);
+    	if (right-pivot+1<k_largest) {
+    		//pivot is larger than the Kth largest, select again on the left
+    		return quickselect(nums, left, pivot-1, k_largest-(right-pivot+1));
+    	} else if (right-pivot+1>k_largest) {
+    		//pivot is smaller than the Kth largest, select again on the right
+    		return quickselect(nums, pivot+1, right, k_largest);
+    	} else {
+    		//pivot is the Kth largest, return the pivot
+    		return nums[pivot];
+    	}
+    }
+    
+    public int partition(int nums[], int left, int right, int pivot_index) {
+    	int pivot = nums[pivot_index];
+    	//swap pivot to the end
+    	nums[pivot_index] = nums[right];
+    	nums[right] = pivot;
+    	//go through and split the array to two parts
+    	pivot_index = right;
+    	for(int i=0; i<pivot_index; i++) {
+    		if (nums[i]>pivot) {
+    			//swap the number with the pivot_index pointer
+    			pivot_index--;
+    			int large = nums[i];
+    			nums[i] = nums[pivot_index];
+    			nums[pivot_index] = large;
+    			i--;
+    		}
+    	}
+    	nums[right] = nums[pivot_index];
+    	nums[pivot_index] = pivot;
+    	return pivot_index;
+    }
+    
     //Q347
+    //Bucket sort     time: O(n)   space: O(n) for HashMap + O(n) for bucket = O(n)
+    //Heap sort     time: O(nlogn) for maxheap, O(nlogk) for minheap   space: O(n)
     public List<Integer> topKFrequent(int[] nums, int k) {
     	
+    	//go over the nums to count occurence
     	HashMap<Integer, Integer> nummap = new HashMap<Integer, Integer>();
     	for (int i : nums) {
     		if (nummap.containsKey(i)) {
@@ -1398,6 +1477,7 @@ public class Solutions {
     	}
     	
     	//use bucket sort O(n)
+        //add to bucket with that frequency
     	List<Integer>[] freqs = new List[nums.length+1];
     	for (Integer n : nummap.keySet()) {
     		if (freqs[nummap.get(n)]==null) {
@@ -2417,6 +2497,56 @@ public class Solutions {
         return null;
     }
   	
+  	//Q124 Path visit nodes with max sum
+  	//N -- numnber of tree nodes, H -- height of tree     time: O(N)   space: O(H), almost O(logN)
+  	int max = Integer.MIN_VALUE;
+  	public int maxPathSum(TreeNode root) {
+  		maxAtNode(root);
+  		return max;
+    }
+  	
+  	public int maxAtNode(TreeNode cur) {
+  		if (cur == null) {
+  			return 0;
+  		}
+  		int leftMaxSum = maxAtNode(cur.left);
+  		int rightMaxSum = maxAtNode(cur.right);
+  		//may include one of the subtree + current node, or only current node (if both subtree < 0)
+  		int keepGoOn = Math.max(cur.val + Math.max(leftMaxSum, rightMaxSum), cur.val);
+  		//right->current->left or left->current->left
+  		//only > keepGoOn if both subtree and current > 0
+  		//if any subtree or current < 0, curAsRoot == keepGoOn
+  		int curAsRoot = Math.max(keepGoOn, cur.val+leftMaxSum+rightMaxSum);
+  		max = Math.max(max, curAsRoot);
+  		return keepGoOn;
+  	}
+  	
+  	//Q230     N -- numnber of tree nodes, H -- height of tree
+  	//time: O(H+k) go to the bottom and then go k, if balance O(logN+k), if not balance O(N+k)
+  	//space: O(H+k) for recursion, if balance O(logN+k), if not balance O(N+k)
+  	int counter = 0;
+  	int ans = 0;
+  	public int kthSmallest(TreeNode root, int k) {
+  		//can also hold by stack
+  		counter = k;
+  		inorderDFS(root);
+  		return ans;
+    }
+  	
+  	public void inorderDFS(TreeNode cur) {
+  		if (cur == null) {
+  			return;
+  		}
+  		inorderDFS(cur.left);
+  		counter--;
+  		if (counter==0) {
+  			ans = cur.val;
+  			return;
+  		}
+  		inorderDFS(cur.right);
+  	  	
+  	}
+  	
     //Q617
     public TreeNode mergeTrees(TreeNode t1, TreeNode t2) {
         if (t1 == null && t2 == null) {
@@ -3369,6 +3499,22 @@ public class Solutions {
     	}
     }
     
+    //Q217
+    //Use sort: time: O(nlogn)   space: O(1)
+    //Use hashSet: time: O(n)   space: O(n)
+    public boolean containsDuplicate(int[] nums) {
+    	HashSet<Integer> s = new HashSet<>();
+    	for(int i : nums) {
+    		if (s.contains(i)) {
+    			return true;
+    		} else {
+    			s.add(i);
+    		}
+    	}
+    	return false;
+    }
+    
+    //Q136
 //    If we take XOR of zero and some bit, it will return that bit: a ⊕ 0 = a
 //    If we take XOR of two same bits, it will return 0: a ⊕ a= 0
 //    a ⊕ b ⊕ a = (a ⊕ a) ⊕ b= 0 ⊕ b = b
@@ -3381,6 +3527,14 @@ public class Solutions {
     	return ans;
     }
     
+    //Q231     time: O(1)   space: O(1)
+    //x & (x - 1) remove the most right 1, power of 2 only has one 1, so x & (x - 1) is 0
+    public boolean isPowerOfTwo(int n) {
+        if (n == 0) return false;
+        long x = (long) n;
+        return (x & (x - 1)) == 0;
+    }
+
     /*
      *                 Main Method 
      */	
