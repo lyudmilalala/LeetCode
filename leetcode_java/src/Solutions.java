@@ -701,7 +701,35 @@ public class Solutions {
         return max;
     }
 
-    //Q8
+    //134     time: O(n)   space: O(1)
+    //if start at i can only go to j, then from i+1 to j, there is not a start that can make a cycle
+    //if start from i+1 can make a cycle, it means we can go from i+1 to j+1
+    //and we can go from i to i+1, so we can go from i to j+1, which is conflict with our original condition
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+    	for (int start = 0; start < gas.length; start++) {
+    		int cur = start;
+    		int remain = gas[cur];
+    		// while can go to next
+    		while (remain - cost[cur] >= 0) {
+    			//go to the next stop
+				remain -= cost[cur];
+				//refresh the next stop and add gas
+				cur = (cur+1)%gas.length;
+				if (cur==start) {
+					return start;
+				}
+				remain += gas[cur];
+    		}
+    		//if cur < start, then start ~ gas.length-1 does not have a start that can make a cycle
+    		if (cur < start) {
+                return -1;
+            }
+    		start = cur;
+    	}
+    	return -1;
+    }
+    
+    //Q8     time: O(n)   space: O(1)
     public int myAtoi(String str) {
     	char[] arr = str.toCharArray();
     	int i = 0;
@@ -2431,6 +2459,34 @@ public class Solutions {
     	}
     }
     
+    //Q110   
+    //if top-down, time: O(nlogn), O(n^2) at worst
+    //bottom-up     time: O(n) to go through every node   space: O(h), O(n) if not balanced
+    class TreeInfo {
+    	int height;
+    	boolean balanced;
+    	
+    	public TreeInfo(int h, boolean b) {
+    		height = h;
+    		balanced = b;
+    	}
+    }
+    
+    public boolean isBalanced(TreeNode root) {
+    	return height(root).balanced;
+    }
+    
+    public TreeInfo height(TreeNode cur) {
+    	if (cur == null) {
+    		return new TreeInfo(-1, true);
+    	}
+    	TreeInfo left = height(cur.left);
+    	TreeInfo right = height(cur.right);
+    	boolean b = left.balanced && right.balanced && Math.abs(left.height - right.height) < 2;
+    	return new TreeInfo(Math.max(left.height , right.height)+1, b);
+    	
+    }
+    
     //Q235     N -- numnber of tree nodes  
     //BFS iteratively using Queue     time: O(N)   space: O(N)
     //recursively choose the correct path     time: O(N)   space: O(N)  -- this solution
@@ -2847,6 +2903,52 @@ public class Solutions {
     		while (i < nums.length-2 && nums[i] == nums[i+1]) {
 				i++;
 			}
+    	}
+    	return ans;
+    }
+    
+    //Q18
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+    	Arrays.parallelSort(nums);
+    	List<List<Integer>> ans = new ArrayList<>();
+    	
+    	for(int a = 0; a<nums.length-3; a++) {
+    		//remove duplication
+    		if (a>0 && nums[a] == nums[a-1]) {
+    			continue;
+    		}
+    		for(int b=a+1; b<nums.length-2; b++) {
+    			//remove duplication
+        		if (b>a+1 && nums[b] == nums[b-1]) {
+        			continue;
+        		}
+        		int c = b+1;
+        		int d = nums.length-1;
+        		while(c<d) {
+        			int sum = nums[a]+nums[b]+nums[c]+nums[d];
+        			if (sum < target) {
+        				c++;
+        			} else if (sum > target) {
+        				d--;
+        			} else {
+//        				List<Integer> l = Arrays.asList(new Integer[]{nums[a], nums[b], nums[c], nums[d]});
+        				List<Integer> l = Arrays.asList(nums[a], nums[b], nums[c], nums[d]);
+        				
+        				ans.add(l);
+        				c++; 
+        				d--;
+        			}
+        			//remove duplication
+        			//need to be put before getting out the loop, or c might >= d
+        			while(c>b+1 && c<d && nums[c] == nums[c-1]) {
+        				c++;
+        			}
+        			while(d<nums.length-1 && c<d && nums[d] == nums[d+1]) {
+        				d--;
+        			}
+        			
+        		}
+    		}
     	}
     	return ans;
     }
@@ -3643,7 +3745,7 @@ public class Solutions {
 //		ListNode ans = s.sortListItr(head);
 //		s.print(ans);
 		
-		System.out.println(s.reverseStr("abcdefghijklmnopqrs", 4));
+//		System.out.println(s.reverseStr("abcdefghijklmnopqrs", 4));
 	}
 
 }
